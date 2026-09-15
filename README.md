@@ -10,7 +10,7 @@ This project uses Git and GitHub for configuration management.
 - `main` contains stable and reviewed code.
 - `feature/*` branches are used for new features.
 - `fix/*` branches are used for bug fixes.
-- `chore/*` branches are used for project configuration and maintenance.
+
 
 ### Development Workflow
 
