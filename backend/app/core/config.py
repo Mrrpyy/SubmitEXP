@@ -1,4 +1,4 @@
-"""Local development settings. Never hardcode database passwords."""
+
 import os
 from pathlib import Path
 
