@@ -1,1 +1,9 @@
 
+CREATE DATABASE IF NOT EXISTS submitexp
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE submitexp;
+
+SHOW DATABASES;
+
