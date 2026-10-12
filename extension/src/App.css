@@ -1,0 +1,12 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, sans-serif; }
+.shell { width: 340px; min-height: 310px; padding: 24px; color: #172337; background: #f6f8fc; }
+.tag { font-size: 10px; font-weight: 800; letter-spacing: 0.12em; color: #4a65b5; }
+h1 { margin: 10px 0 0; font-size: 29px; letter-spacing: -1px; }
+h1 span { color: #4967d5; }
+.motto { margin: 0 0 20px; font-size: 13px; color: #63728b; }
+.panel { background: white; border: 1px solid #e0e5ef; border-radius: 12px; padding: 15px; box-shadow: 0 8px 20px #0d20500a; }
+h2 { margin: 0 0 6px; font-size: 16px; }
+.panel p { color: #526079; line-height: 1.5; font-size: 12px; }
+button { display: block; margin-top: 15px; width: 100%; padding: 10px; border: 0; border-radius: 8px; background: #dfe4ee; color: #68758a; font-weight: 600; }
+small { display: block; margin-top: 14px; color: #63728b; line-height: 1.5; }

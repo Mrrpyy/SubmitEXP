@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "SubmitEXP (Starter)",
+  "version": "0.1.0",
+  "description": "Privacy-first student assignment gamification browser extension (starter).",
+  "action": {
+    "default_title": "SubmitEXP",
+    "default_popup": "index.html"
+  }
+}
