@@ -1,10 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "SubmitEXP (Starter)",
+  "name": "SubmitEXP",
   "version": "0.1.0",
-  "description": "Privacy-first student assignment gamification browser extension (starter).",
+  "description": "Earn points for turning in Canvas assignments early.",
   "action": {
     "default_title": "SubmitEXP",
     "default_popup": "index.html"
-  }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": [
+    "https://*.instructure.com/*",
+    "http://127.0.0.1:8000/*"
+  ]
 }
