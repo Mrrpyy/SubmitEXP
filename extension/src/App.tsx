@@ -25,7 +25,9 @@ export default function App() {
       await saveValue('timesOpened', count);
       setTimesOpened(count);
     }
-    setup();
+    setup().catch((error) => {
+      console.error('Popup setup failed:', error);
+    });
   }, []);
 
   return (
