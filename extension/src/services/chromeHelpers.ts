@@ -7,8 +7,18 @@ export const isExtension = typeof chrome !== 'undefined' && !!chrome.runtime?.id
 // url of the tab the user is looking at, needs the activeTab permission
 export async function getActiveTabUrl(): Promise<string | null> {
   if (!isExtension) return null;
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  return tab?.url ?? null;
+
+  try {
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+
+    return tab?.url ?? null;
+  } catch (error) {
+    console.error('Failed to get active tab:', error);
+    return null;
+  }
 }
 
 // true when the url is a canvas page, canvas is hosted on instructure
