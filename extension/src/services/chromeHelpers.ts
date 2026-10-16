@@ -14,8 +14,14 @@ export async function getActiveTabUrl(): Promise<string | null> {
 // true when the url is a canvas page, canvas is hosted on instructure
 export function isCanvasUrl(url: string | null): boolean {
   if (!url) return false;
+
   try {
-    return new URL(url).hostname.endsWith('instructure.com');
+    const parsed = new URL(url);
+    const host = parsed.hostname;
+
+    return parsed.protocol === 'https:' &&
+      (host === 'instructure.com' ||
+       host.endsWith('.instructure.com'));
   } catch {
     return false;
   }
