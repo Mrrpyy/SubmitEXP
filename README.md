@@ -13,7 +13,7 @@ The project uses:
 
 Screenshot processing and OCR are planned to run locally in the browser to protect user privacy.
 
-**Current Status:** The extension can communicate with the backend and validate sample assignment metadata. Submission storage, OCR, and EXP awarding are still in development.
+**Current Status:** The extension can communicate with the backend and validate sample assignment metadata.
 
 ## Project Setup
 
@@ -45,15 +45,15 @@ Start the FastAPI backend server:
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --port 8000
 ```
 
-The backend should now be running at:
+The backend should be running at:
 
 http://127.0.0.1:8000
 
-To verify that the backend is working, open:
+Verify that backend is working:
 
 http://127.0.0.1:8000/health
 
-Expected response:
+Expected:
 
 ```json
 {
@@ -61,7 +61,7 @@ Expected response:
 }
 ```
 
-API documentation is available at:
+API documentation:
 
 http://127.0.0.1:8000/docs
 
@@ -69,25 +69,25 @@ Keep the backend terminal running while testing the extension.
 
 ### Step 2: Set Up the Chrome Extension
 
-Open a second terminal and navigate to the extension directory from the project root:
+Open a second terminal and navigate to the extentsion dir from the project root:
 
 ```powershell
 cd extension
 ```
 
-Install the extension dependencies:
+Instal extension dependencies:
 
 ```powershell
 npm ci
 ```
 
-Build the extension:
+Build extension:
 
 ```powershell
 npm run build
 ```
 
-This creates the `dist` directory containing the compiled extension.
+Creates the `dist` directory, has compiled extension.
 
 ### Step 3: Load the Extension in Chrome
 
@@ -98,7 +98,7 @@ This creates the `dist` directory containing the compiled extension.
 5. Select the `SubmitEXP/extension/dist` folder.
 6. Open SubmitEXP from the Chrome toolbar.
 
-Whenever changes are made to the extension source code, run:
+Whenever changes are made to the extension source code run:
 
 ```powershell
 npm run build
@@ -115,69 +115,23 @@ Make sure the FastAPI backend server is running.
 3. Click **Test API Connection**.
 4. Verify that the request succeeds.
 
-Expected response:
+Expected:
 
 ```text
 Metadata validated (not saved; no points awarded).
 ```
 
-This confirms that the extension can communicate with the backend.
-
-The current integration validates sample assignment metadata without saving submissions or awarding EXP.
-
-## Database Setup (Optional)
-
-MySQL is used for storing user accounts, assignments, submissions, and progress information.
-
-The database is not required for the basic backend connection test.
-
-### Step 1: Create the Database
-
-Open MySQL Workbench and execute:
-
-```sql
-CREATE DATABASE IF NOT EXISTS submitexp;
-```
-
-### Step 2: Create the Tables
-
-Open the following file in MySQL Workbench:
-
-```text
-database/schema.sql
-```
-
-Execute the SQL script to create the required database tables.
-
-### Step 3: Configure Environment Variables
-
-From the main project directory, copy the environment template:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Update `.env` with your local MySQL credentials:
-
-```dotenv
-DATABASE_URL=mysql+pymysql://YOUR_USER:YOUR_PASSWORD@127.0.0.1:3306/submitexp
-JWT_SECRET=replace-with-a-long-random-secret
-ENVIRONMENT=development
-```
-
-Replace the example values with your own configuration.
-
-Do not commit `.env` or database credentials to GitHub.
+Confirms that the extension can communicate with the backend.
 
 ### Step 4: Verify the Database Connection
 
-Restart the backend server.
+Restart backend server.
 
 Open:
 
 http://127.0.0.1:8000/health/database
 
-A successful response confirms that the backend can communicate with MySQL.
+Successful response confirms that the backend can communicate with MySQL.
 
 ## Running Tests
 
@@ -197,7 +151,7 @@ Run all backend tests:
 
 ### Extension-to-Backend Integration Tests
 
-To test only the backend integration functionality:
+To test the backend integration functionality:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest tests/test_integration.py -v
@@ -217,7 +171,7 @@ Expected result:
 5 passed
 ```
 
-The automated API tests do not require the backend server to be running separately.
+Automated API tests don't require the backend server to be running separately.
 
 ### Extension Build Test
 
@@ -233,9 +187,7 @@ Run:
 npm run build
 ```
 
-A successful build confirms that the TypeScript project compiles and the production bundle is generated.
-
-The extension does not currently have a separate automated `npm test` script.
+Successful build confirms that TypeScript project compiles and production bundle is generated
 
 ### Manual Extension Test
 
