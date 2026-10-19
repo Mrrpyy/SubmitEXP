@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS submissions (
 
     submission_type ENUM(
         'assignment',
+        'quiz',
         'test',
         'exam'
     ) NOT NULL DEFAULT 'assignment',
