@@ -1,9 +1,9 @@
-import { createWorker, PSM } from 'tesseract.js';
+import { createWorker } from 'tesseract.js';
 
-export class OCRService {
+export type OCRResult = {
   text: string;
   confidence?: number;
-}
+};
 
 // chrome extensions cant load code from the internet so we load it in. They live in extension/public/tesserasact 
 const base = `${window.location.origin}/tesseract`;
