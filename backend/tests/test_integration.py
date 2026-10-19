@@ -34,9 +34,19 @@ def test_reject_screenshots():
 def test_reject_invalid_types():
     response = client.post('/integration/validate', json={
         'assignment_title': 'Demo',
-        'submission_type': 'quiz',
+        'submission_type': 'invalid',
     })
     assert response.status_code == 422
+
+
+def test_accept_quizzes():
+    response = client.post('/integration/validate', json={
+        'assignment_title': 'Demo Quiz',
+        'submission_type': 'quiz',
+    })
+    assert response.status_code == 200
+    assert response.json()['accepted'] is True
+    assert response.json()['submission_type'] == 'quiz'
 
 
 def test_cors_for_chrome_extension():
