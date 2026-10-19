@@ -15,7 +15,7 @@ class SubmissionMetadata(BaseModel):
 
     assignment_title: str = Field(min_length=1, max_length=255)
     course_name: str | None = Field(default=None, max_length=150)
-    submission_type: Literal["assignment", "test", "exam"] = "assignment"
+    submission_type: Literal["assignment", "quiz", "test", "exam"] = "assignment"
     due_at: datetime | None = None
     submitted_at: datetime | None = None
 
