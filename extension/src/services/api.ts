@@ -1,7 +1,7 @@
-// The local FastAPI server. This URL is already covered by manifest.json.
+export type SubmissionType = 'assignment' | 'quiz' | 'test' | 'exam';// The local FastAPI server. This URL is already covered by manifest.json.
 export const API_BASE_URL = 'http://127.0.0.1:8000';
 
-export type SubmissionType = 'assignment' | 'test' | 'exam';
+export type SubmissionType = 'assignment' | 'quiz' | 'test' | 'exam';
 
 export interface SubmissionMetadata {
   assignment_title: string;
