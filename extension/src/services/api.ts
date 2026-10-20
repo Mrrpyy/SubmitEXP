@@ -20,7 +20,30 @@ interface HealthResponse {
   status: string;
 }
 
-async function apiRequest<T>(path: string, body?: unknown): Promise<T> {
+export interface User {
+  user_id: number;
+  username: string;
+  email: string;
+  role: string;
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+// remembers the HTTP status so the popup can tell "login expired" from "backend offline"
+export class ApiError extends Error {
+  status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function apiRequest<T>(path: string, body?: unknown, token?: string): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
 
@@ -30,10 +53,16 @@ async function apiRequest<T>(path: string, body?: unknown): Promise<T> {
       signal: controller.signal,
     };
 
+    const headers: Record<string, string> = {};
+
     if (body !== undefined) {
-      options.headers = { 'Content-Type': 'application/json' };
+      headers['Content-Type'] = 'application/json';
       options.body = JSON.stringify(body);
     }
+
+     // Logged in requests carry the login token from /auth/login.
+    if (token) headers.Authorization = `Bearer ${token}`;
+    options.headers = headers;
 
     const response = await fetch(`${API_BASE_URL}${path}`, options);
     const data: unknown = await response.json().catch(() => null);
@@ -43,8 +72,10 @@ async function apiRequest<T>(path: string, body?: unknown): Promise<T> {
       if (data && typeof data === 'object' && 'detail' in data) {
         const detail = data.detail;
         if (typeof detail === 'string') reason = detail;
+
+        else if (Array.isArray(detail) && typeof detail[0]?.msg === 'string') reason = detail[0].msg;
       }
-      throw new Error(reason);
+      throw new ApiError(reason, response.status);
     }
 
     if (data === null) throw new Error('Backend returned invalid JSON');
@@ -95,4 +126,14 @@ export function registerUser(
     '/auth/register',
     user
   );
+}
+
+// identifier is the username or the email
+export function loginUser(identifier: string, password: string): Promise<LoginResponse> {
+  return apiRequest<LoginResponse>('/auth/login', { identifier, password });
+}
+
+// Checks that a saved token still works and returns who it belongs to
+export function getCurrentUser(token: string): Promise<User> {
+  return apiRequest<User>('/auth/me', undefined, token);
 }
