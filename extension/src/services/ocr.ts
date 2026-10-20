@@ -16,8 +16,11 @@ function getWorker() {
       workerPath: `${base}/worker.min.js`,
       corePath: `${base}/tesseract-core-simd-lstm.wasm.js`,
       langPath: base,
-      workerBlobURL: false, 
+      workerBlobURL: false,
       cacheMethod: 'none',
+    }).catch((error) => {
+      workerPromise = null;
+      throw error;
     });
   }
   return workerPromise;

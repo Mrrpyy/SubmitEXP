@@ -1,4 +1,4 @@
-
+import RegistrationForm from './components/RegistrationForm';
 import { useEffect, useState } from 'react';
 import BackendConnectionStatus from './components/BackendConnectionStatus';
 import {
@@ -72,6 +72,7 @@ export default function App() {
       </section>
 
       <BackendConnectionStatus />
+      <RegistrationForm />
 
       <small>
         Screenshot capture comes in a later item.

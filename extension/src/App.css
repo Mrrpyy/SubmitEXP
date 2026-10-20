@@ -12,3 +12,13 @@ button { display: block; margin-top: 15px; width: 100%; padding: 10px; border: 0
 small { display: block; margin-top: 14px; color: #63728b; line-height: 1.5; }
 .status { margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.8; color: #526079; }
 button:not(:disabled) { background: #4967d5; color: white; cursor: pointer; }
+/* Registration form */
+.registration-panel { margin-top: 12px; }
+.registration-panel form { display: flex; flex-direction: column; gap: 8px; }
+.registration-panel label { font-size: 12px; font-weight: 600; color: #172337; }
+.registration-panel input { width: 100%; padding: 10px; border: 1px solid #d0d7e2; border-radius: 8px; font-size: 13px; background: white; color: #172337; }
+.registration-panel input:focus { outline: 2px solid #4967d5; outline-offset: 1px; }
+.registration-panel button { margin-top: 12px; }
+.registration-panel button:disabled { opacity: 0.6; }
+.form-error { color: #b42318 !important; font-size: 12px; }
+.form-success { color: #067647 !important; font-size: 12px; }

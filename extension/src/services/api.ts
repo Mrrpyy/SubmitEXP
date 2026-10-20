@@ -1,7 +1,6 @@
-export type SubmissionType = 'assignment' | 'quiz' | 'test' | 'exam';// The local FastAPI server. This URL is already covered by manifest.json.
-export const API_BASE_URL = 'http://127.0.0.1:8000';
-
+// The local FastAPI server. This URL is already covered by manifest.json.
 export type SubmissionType = 'assignment' | 'quiz' | 'test' | 'exam';
+export const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export interface SubmissionMetadata {
   assignment_title: string;
@@ -73,4 +72,27 @@ export function validateSubmissionMetadata(
   metadata: SubmissionMetadata,
 ): Promise<ValidationResponse> {
   return apiRequest<ValidationResponse>('/integration/validate', metadata);
+}
+
+// Implementation for user registration.
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  user_id: number;
+  username: string;
+  email: string;
+  role: string;
+}
+
+export function registerUser(
+  user: RegisterRequest
+): Promise<RegisterResponse> {
+  return apiRequest<RegisterResponse>(
+    '/auth/register',
+    user
+  );
 }
