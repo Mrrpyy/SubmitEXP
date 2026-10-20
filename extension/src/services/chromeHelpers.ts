@@ -48,7 +48,7 @@ export async function pingBackground(): Promise<boolean> {
   }
 }
 
- // saves a small value that survives closing the popup
+ // Saves a small value that survives closing the popup
 export async function saveValue(
   key: string,
   value: unknown
@@ -59,10 +59,11 @@ export async function saveValue(
     await chrome.storage.local.set({ [key]: value });
   } catch (error) {
     console.error('Failed to save value:', error);
+    throw error;
   }
 }
 
-// loads a value saved with saveValue
+// Loads a value saved with saveValue
 export async function loadValue<T>(
   key: string
 ): Promise<T | undefined> {
@@ -73,6 +74,6 @@ export async function loadValue<T>(
     return result[key] as T | undefined;
   } catch (error) {
     console.error('Failed to load value:', error);
-    return undefined;
+    throw error;
   }
 }

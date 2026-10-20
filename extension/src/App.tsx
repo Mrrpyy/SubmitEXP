@@ -1,6 +1,7 @@
+
 import RegistrationForm from './components/RegistrationForm';
 import LoginForm from './components/LoginForm';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BackendConnectionStatus from './components/BackendConnectionStatus';
 import { ApiError, getCurrentUser } from './services/api';
 import type { User } from './services/api';
@@ -12,8 +13,12 @@ import {
   pingBackground,
   saveValue,
 } from './services/chromeHelpers';
-import { clearSession, loadSession, saveSession } from './services/session';
-
+import {
+  clearSession,
+  loadSession,
+  saveSession,
+} from './services/session';
+import { AuthRequestGuard } from './authRequestGuard';
 
 export default function App() {
   const [onCanvas, setOnCanvas] = useState(false);
@@ -21,6 +26,24 @@ export default function App() {
   const [timesOpened, setTimesOpened] = useState(0);
   const [user, setUser] = useState<User | null>(null);
 
+  // Prevent outdated authentication requests
+  const authGuard = useRef(new AuthRequestGuard());
+
+  // Keep session storage writes in order
+  const sessionWriteQueue = useRef<Promise<void>>(
+    Promise.resolve()
+  );
+
+  function queueSessionWrite(
+    action: () => Promise<void>
+  ): Promise<void> {
+    const operation = sessionWriteQueue.current
+      .catch(() => undefined)
+      .then(action);
+
+    sessionWriteQueue.current = operation;
+    return operation;
+  }
 
   // Runs once every time the popup opens
   useEffect(() => {
@@ -29,7 +52,6 @@ export default function App() {
       setOnCanvas(isCanvasUrl(url));
       setBackgroundOk(await pingBackground());
 
-      // Proves storage works across popup sessions
       const count =
         ((await loadValue<number>('timesOpened')) ?? 0) + 1;
 
@@ -42,19 +64,48 @@ export default function App() {
     });
   }, []);
 
-  // Restore the saved login when the popup opens
+  // Restore saved login when popup opens
   useEffect(() => {
+    const requestId = authGuard.current.begin();
+
     async function restore() {
       const session = await loadSession();
+
+      // Ignore outdated requests
+      if (!authGuard.current.isCurrent(requestId)) {
+        return;
+      }
+
       if (!session) return;
-      setUser(session.user); // show it right away
+
+      // Display saved user immediately
+      setUser(session.user);
+
       try {
-        setUser(await getCurrentUser(session.token)); // make sure the token still works
+        const currentUser = await getCurrentUser(
+          session.token
+        );
+
+        if (!authGuard.current.isCurrent(requestId)) {
+          return;
+        }
+
+        setUser(currentUser);
       } catch (error) {
-        // Only a 401 means the login is really over
-        if (error instanceof ApiError && error.status === 401) {
-          await clearSession();
-          setUser(null);
+        if (!authGuard.current.isCurrent(requestId)) {
+          return;
+        }
+
+        // Only clear session when token is invalid
+        if (
+          error instanceof ApiError &&
+          error.status === 401
+        ) {
+          await queueSessionWrite(clearSession);
+
+          if (authGuard.current.isCurrent(requestId)) {
+            setUser(null);
+          }
         }
       }
     }
@@ -62,16 +113,42 @@ export default function App() {
     restore().catch((error) => {
       console.error('Restoring login failed:', error);
     });
+
+    // Cancel outdated requests on cleanup
+    return () => {
+      authGuard.current.invalidate();
+    };
   }, []);
 
-  async function handleLoggedIn(token: string, loggedInUser: User) {
-    await saveSession({ token, user: loggedInUser });
+  // Handle successful login
+  async function handleLoggedIn(
+    token: string,
+    loggedInUser: User
+  ) {
+    const requestId = authGuard.current.begin();
+
+    await queueSessionWrite(() =>
+      saveSession({ token, user: loggedInUser })
+    );
+
+    if (!authGuard.current.isCurrent(requestId)) {
+      return;
+    }
+
     setUser(loggedInUser);
   }
 
+  // Handle logout
   async function handleLogout() {
-    await clearSession();
-    setUser(null);
+    // Invalidate pending authentication requests
+    authGuard.current.invalidate();
+
+    try {
+      await queueSessionWrite(clearSession);
+      setUser(null);
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   }
 
   return (
@@ -82,13 +159,19 @@ export default function App() {
         Submit<span>EXP</span>
       </h1>
 
-      <p className="motto">Finish early. Level up.</p>
+      <p className="motto">
+        Finish early. Level up.
+      </p>
 
-            {user ? (
+      {user ? (
         <section className="panel">
           <h2>Welcome, {user.username}</h2>
           <p>Logged in as {user.email}</p>
-          <button type="button" className="link" onClick={handleLogout}>
+          <button
+            type="button"
+            className="link"
+            onClick={handleLogout}
+          >
             Log out
           </button>
         </section>
@@ -96,18 +179,24 @@ export default function App() {
         <LoginForm onLoggedIn={handleLoggedIn} />
       )}
 
-      <section className="panel" style={{ marginTop: 12 }}>
+      <section
+        className="panel"
+        style={{ marginTop: 12 }}
+      >
         <h2>Status</h2>
 
         <ul className="status">
           <li>
-            Running as extension: {isExtension ? 'yes' : 'no (dev preview)'}
+            Running as extension:{' '}
+            {isExtension ? 'yes' : 'no (dev preview)'}
           </li>
           <li>
-            Background worker: {backgroundOk ? 'running' : 'not found'}
+            Background worker:{' '}
+            {backgroundOk ? 'running' : 'not found'}
           </li>
           <li>
-            Current tab is Canvas: {onCanvas ? 'yes' : 'no'}
+            Current tab is Canvas:{' '}
+            {onCanvas ? 'yes' : 'no'}
           </li>
           <li>
             Popup opened: {timesOpened} times
@@ -116,20 +205,29 @@ export default function App() {
 
         <button
           disabled={!onCanvas || !user}
-          title={!user ? 'Log in first' : onCanvas ? '' : 'Open a Canvas page first'}
+          title={
+            !user
+              ? 'Log in first'
+              : onCanvas
+                ? ''
+                : 'Open a Canvas page first'
+          }
         >
           Check Submission
         </button>
       </section>
 
       <BackendConnectionStatus />
+
       {!user && <RegistrationForm />}
 
       <small>
         Screenshot capture comes in a later item.
       </small>
+
       <small>
-        OCR will run locally in your browser to protect your screenshots.
+        OCR will run locally in your browser
+        to protect your screenshots.
       </small>
     </main>
   );
