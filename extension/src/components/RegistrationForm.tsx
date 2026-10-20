@@ -53,7 +53,7 @@ export default function RegistrationForm() {
       });
 
       setSuccess(
-        `Account created for ${result.username}! You can log in once login is available.`
+        `Account created for ${result.username}! You can log in now.`
       );
 
       setUsername('');

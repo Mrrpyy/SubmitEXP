@@ -22,3 +22,13 @@ button:not(:disabled) { background: #4967d5; color: white; cursor: pointer; }
 .registration-panel button:disabled { opacity: 0.6; }
 .form-error { color: #b42318 !important; font-size: 12px; }
 .form-success { color: #067647 !important; font-size: 12px; }
+
+
+/* Login form */
+.login-panel form { display: flex; flex-direction: column; gap: 8px; }
+.login-panel label { font-size: 12px; font-weight: 600; color: #172337; }
+.login-panel input { width: 100%; padding: 10px; border: 1px solid #d0d7e2; border-radius: 8px; font-size: 13px; background: white; color: #172337; }
+.login-panel input:focus { outline: 2px solid #4967d5; outline-offset: 1px; }
+.login-panel button { margin-top: 12px; }
+.login-panel button:disabled { opacity: 0.6; }
+button.link, button.link:not(:disabled) { background: none; color: #4967d5; padding: 0; margin-top: 12px; width: auto; font-weight: 600; }
