@@ -137,3 +137,49 @@ export function loginUser(identifier: string, password: string): Promise<LoginRe
 export function getCurrentUser(token: string): Promise<User> {
   return apiRequest<User>('/auth/me', undefined, token);
 }
+
+// Assignment EXP calculation
+export interface AssignmentPointsResponse {
+  points: number;
+  message: string;
+}
+export function previewAssignmentPoints(
+  dueAt: string,
+  submittedAt: string
+): Promise<AssignmentPointsResponse> {
+  return apiRequest<AssignmentPointsResponse>(
+    '/integration/assignment-points-preview',
+    {
+      due_at: dueAt,
+      submitted_at: submittedAt,
+    }
+  );
+}
+
+// Authenticated assignment EXP recording
+export interface AssignmentAwardRequest {
+  canvas_course_id: number;
+  canvas_assignment_id: number;
+  assignment_title: string;
+  course_name?: string | null;
+  due_at: string;
+  submitted_at: string;
+}
+
+export interface AssignmentAwardResponse {
+  submission_id: number;
+  points_awarded: number;
+  total_points: number;
+  current_level: number;
+}
+
+export function awardAssignment(
+  token: string,
+  assignment: AssignmentAwardRequest
+): Promise<AssignmentAwardResponse> {
+  return apiRequest<AssignmentAwardResponse>(
+    '/submissions/assignment',
+    assignment,
+    token
+  );
+}

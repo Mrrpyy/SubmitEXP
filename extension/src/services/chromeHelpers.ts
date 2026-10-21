@@ -77,3 +77,62 @@ export async function loadValue<T>(
     throw error;
   }
 }
+
+// Capture the currently visible Canvas tab, the screenshot stays inside the extension
+export async function captureCanvasScreenshot(): Promise<string> {
+  if (!isExtension) {
+    throw new Error(
+      'Screenshot capture requires the Chrome extension.'
+    );
+  }
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
+
+  if (!tab || !isCanvasUrl(tab.url ?? null)) {
+    throw new Error(
+      'Open a Canvas page before checking a submission.'
+    );
+  }
+  const screenshot = await chrome.tabs.captureVisibleTab(
+    tab.windowId,
+    { format: 'png' }
+  );
+  return screenshot;
+}
+export interface CanvasAssignmentIds {
+  canvas_course_id: number;
+  canvas_assignment_id: number;
+}
+
+export function getCanvasAssignmentIds(
+  url: string | null
+): CanvasAssignmentIds | null {
+  if (!isCanvasUrl(url) || !url) {
+    return null;
+  }
+  const parsed = new URL(url);
+  const match = parsed.pathname.match(
+    /^\/courses\/(\d+)\/assignments\/(\d+)(?:\/|$)/
+  );
+
+  if (!match) {
+    return null;
+  }
+  const courseId = Number(match[1]);
+  const assignmentId = Number(match[2]);
+  if (
+    !Number.isSafeInteger(courseId) ||
+    !Number.isSafeInteger(assignmentId) ||
+    courseId <= 0 ||
+    assignmentId <= 0
+  ) {
+    return null;
+  }
+  return {
+    canvas_course_id: courseId,
+    canvas_assignment_id: assignmentId,
+  };
+}
+

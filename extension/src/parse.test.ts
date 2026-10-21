@@ -22,7 +22,7 @@ describe('Canvas assignment parsing', () => {
     const text = `
       Assignments > Lab 2
       Due: Tue, Oct 20, 2026 at 11:59 PM
-      Submitted Oct 19, 2026 at 3:30 PM
+      Submitted on Oct 19, 2026 at 3:30 PM
     `;
 
     const result = parseSubmission(text);
@@ -35,7 +35,7 @@ describe('Canvas assignment parsing', () => {
     const text = `
       Assignments > Homework 2
       Due: Oct 20 at 11:59 PM
-      Submitted Oct 19 at 3:30 PM
+      Submitted on Oct 19 at 3:30 PM
     `;
 
     const result = parseSubmission(text, 2026);

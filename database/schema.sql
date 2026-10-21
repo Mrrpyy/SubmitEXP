@@ -48,6 +48,17 @@ CREATE TABLE IF NOT EXISTS submissions (
     created_at TIMESTAMP
         DEFAULT CURRENT_TIMESTAMP,
 
+    canvas_course_id BIGINT DEFAULT NULL,
+
+    canvas_assignment_id BIGINT DEFAULT NULL,
+
+    CONSTRAINT uq_user_canvas_assignment
+        UNIQUE (
+            user_id,
+            canvas_course_id,
+            canvas_assignment_id
+        ),
+
     CONSTRAINT fk_submissions_user
         FOREIGN KEY (user_id)
         REFERENCES users(user_id)
