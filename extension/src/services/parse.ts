@@ -12,7 +12,7 @@ const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', '
 const DATE_PART = String.raw`(?:[a-z]{3,9},?\s+)?([a-z]{3,9})\s+(\d{1,2})(?:,?\s+(\d{4}))?,?\s*(?:at\s+)?(\d{1,2})[:.](\d{2})\s*([ap]m)\b`;
 const DUE = new RegExp(String.raw`\bdue(?:\s+date)?\s*:?\s*${DATE_PART}`, 'i');
 const SUBMITTED = new RegExp(
-  String.raw`\b(?:submitted|sumitted)\s+on\s*[!:]?\s*${DATE_PART}`,
+  String.raw`\b(?:submitted|submited|sumitted)(?:\s+(?:on|at))?\s*[:!]?\s*${DATE_PART}`,
   'i'
 );
 

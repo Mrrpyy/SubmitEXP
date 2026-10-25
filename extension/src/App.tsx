@@ -232,6 +232,7 @@ export default function App() {
       const screenshot = await captureCanvasScreenshot();
 // Perform OCR locally
       const result = await recognizeScreenshot(screenshot);
+      console.log('OCR TEXT:', result.text);
 // Extract assignment information
       const parsed = parseSubmission(
         result.text,
