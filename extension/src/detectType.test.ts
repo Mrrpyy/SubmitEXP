@@ -67,4 +67,12 @@ describe('test and exam detection', () => {
     expect(result.typeReason).toContain('Exam');
     expect(result.missing).toEqual([]);
   });
+  it('does not classify test corrections as tests', () => {
+    expect(
+      detectSubmissionType('Test 1 Corrections', ASSIGNMENT_PAGE).type).toBe('assignment');
+    expect(
+      detectSubmissionType('Test 1 Plan', ASSIGNMENT_PAGE).type).toBe('assignment');
+    expect(
+      detectSubmissionType('Test 2 - Corrections', ASSIGNMENT_PAGE).type).toBe('assignment');
+  });
 });
