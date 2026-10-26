@@ -1,8 +1,14 @@
-export type SubmissionType = 'assignment' | 'quiz' | 'test' | 'exam';
+import { detectSubmissionType } from './detectType';
+import type { SubmissionType } from './detectType';
+
+// other files still import the type from here
+export type { SubmissionType } from './detectType';
 
 export type ParsedSubmission = {
   title: string | null;
   type: SubmissionType;
+  // why it was picked as a test, exam, quiz or assignment
+  typeReason: string;
   dueAt: string | null;
   submittedAt: string | null;
   missing: string[];
@@ -101,12 +107,8 @@ export function parseSubmission(
     contextYear ?? nearbyYear(submittedMatch, dueMatch)
   );
 
-  const isQuizPage = /time limit/i.test(ocrText) || /quizzes\s*[>»›]/i.test(ocrText);
-
-  let type: SubmissionType = 'assignment';
-  if (title && /\b(exam|midterm)\b/i.test(title)) type = 'exam';
-  else if (isQuizPage && title && /\btest\b/i.test(title)) type = 'test';
-  else if (isQuizPage) type = 'quiz';
+  // tests and exams are detected in detectType.ts
+  const { type, reason: typeReason } = detectSubmissionType(title, ocrText);
 
   const missing: string[] = [];
   if (!title) missing.push('title');
@@ -118,5 +120,5 @@ export function parseSubmission(
     missing.push('submission');
   }
 
-  return { title, type, dueAt, submittedAt, missing };
+  return { title, type, typeReason, dueAt, submittedAt, missing };
 }

@@ -446,6 +446,17 @@ export default function App() {
               Type: {submission.type}
             </p>
 
+            <small>
+              Why: {submission.typeReason}
+            </small>
+
+{/* tests and exams get their own EXP rules later (item 12) */}
+            {(submission.type === 'test' || submission.type === 'exam') && (
+              <p>
+                This looks like a {submission.type}. Test and exam EXP is not scored yet.
+              </p>
+            )}
+
             <p>
               Due: {submission.dueAt ?? 'Not found'}
             </p>
