@@ -24,7 +24,7 @@ button:not(:disabled) { background: #4967d5; color: white; cursor: pointer; }
 .form-success { color: #067647 !important; font-size: 12px; }
 
 
-/* Login form */
+/*Login form */
 .login-panel form { display: flex; flex-direction: column; gap: 8px; }
 .login-panel label { font-size: 12px; font-weight: 600; color: #172337; }
 .login-panel input { width: 100%; padding: 10px; border: 1px solid #d0d7e2; border-radius: 8px; font-size: 13px; background: white; color: #172337; }

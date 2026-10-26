@@ -7,7 +7,7 @@ export type { SubmissionType } from './detectType';
 export type ParsedSubmission = {
   title: string | null;
   type: SubmissionType;
-  // why it was picked as a test, exam, quiz or assignment
+// why it was picked as a test, exam, quiz or assignment
   typeReason: string;
   dueAt: string | null;
   submittedAt: string | null;
@@ -107,7 +107,7 @@ export function parseSubmission(
     contextYear ?? nearbyYear(submittedMatch, dueMatch)
   );
 
-  // tests and exams are detected in detectType.ts
+// tests and exams are detected in detectType.ts
   const { type, reason: typeReason } = detectSubmissionType(title, ocrText);
 
   const missing: string[] = [];

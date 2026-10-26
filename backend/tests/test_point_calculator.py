@@ -6,7 +6,7 @@ from point_calculator import calculate_assignment_points
 DUE_DATE = "2026-10-25T23:59:00Z"
 
 def test_assignment_submitted_early():
-    # More than 24 hours early
+# More than 24 hours early
     points = calculate_assignment_points(
         DUE_DATE, "2026-10-23T20:00:00Z"
     )
@@ -19,7 +19,7 @@ def test_assignment_exactly_24_hours_early():
     assert points == 15
 
 def test_assignment_submitted_on_time():
-    # Less than 24 hours early
+# Less than 24 hours early
     points = calculate_assignment_points(
         DUE_DATE, "2026-10-25T20:00:00Z"
     )

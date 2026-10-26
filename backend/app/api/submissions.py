@@ -34,7 +34,7 @@ class AssignmentSubmissionResponse(BaseModel):
 )
 def award_assignment(
     body: AssignmentSubmissionRequest,
-    # only students earn EXP, admins get a 403
+# only students earn EXP, admins get a 403
     user: UserInfo = Depends(require_student),
 ) -> AssignmentSubmissionResponse:
     try:
@@ -47,7 +47,7 @@ def award_assignment(
             status_code=422,
             detail=str(exc),
         ) from exc
-    # Store all database DATETIME values in UTC.
+# Store all database DATETIME values in UTC.
     due_utc = body.due_at.astimezone(
         timezone.utc
     ).replace(tzinfo=None)
@@ -55,7 +55,7 @@ def award_assignment(
         timezone.utc
     ).replace(tzinfo=None)
     try:
-        # All database writes succeed or fail together.
+# All database writes succeed or fail together.
         with get_engine().begin() as connection:
 
             result = connection.execute(
@@ -125,7 +125,7 @@ def award_assignment(
             total_points = int(progress["total_points"])
             current_level = int(progress["current_level"])
     except IntegrityError as exc:
-        # MySQL error 1062: duplicate unique key.
+# MySQL error 1062: duplicate unique key.
         if getattr(exc.orig, "args", ())[:1] == (1062,):
             raise HTTPException(
                 status_code=409,
