@@ -4,7 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from app.api.auth import UserInfo, get_current_user
+from app.api.auth import UserInfo
+from app.api.roles import require_student
 from app.db.connection import DatabaseNotConfigured, get_engine
 from point_calculator import calculate_assignment_points
 
@@ -33,7 +34,8 @@ class AssignmentSubmissionResponse(BaseModel):
 )
 def award_assignment(
     body: AssignmentSubmissionRequest,
-    user: UserInfo = Depends(get_current_user),
+    # only students earn EXP, admins get a 403
+    user: UserInfo = Depends(require_student),
 ) -> AssignmentSubmissionResponse:
     try:
         points = calculate_assignment_points(

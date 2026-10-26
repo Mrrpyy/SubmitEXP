@@ -116,6 +116,9 @@ export default function App() {
     });
   }, []);
 
+// only students earn EXP, admins can look but not record
+  const isStudent = user?.role === 'student';
+
 // Restore saved login when popup opens
   useEffect(() => {
     const requestId = authGuard.current.begin();
@@ -206,7 +209,7 @@ export default function App() {
 
 // Capture Canvas and calculate assignment EXP preview
   async function handleCheckSubmission() {
-    if (checking || awarding || !user || !onCanvas) return;
+    if (checking || awarding || !user || !isStudent || !onCanvas) return;
 
     setChecking(true);
     setCheckError(null);
@@ -365,6 +368,7 @@ export default function App() {
         <section className="panel">
           <h2>Welcome, {user.username}</h2>
           <p>Logged in as {user.email}</p>
+          <p>Role: <strong>{user.role}</strong></p>
 
           <button
             type="button"
@@ -409,11 +413,18 @@ export default function App() {
 {/* Check Submission */}
         <button
           type="button"
-          disabled={!onCanvas || !user || checking || awarding}
+          disabled={!onCanvas || !user || !isStudent || checking || awarding}
           onClick={handleCheckSubmission}
         >
           {checking ? 'Checking...' : 'Check Submission'}
         </button>
+
+{/* admins cannot earn EXP */}
+        {user && !isStudent && (
+          <p>
+            <small>Admin accounts do not earn EXP. Log in as a student to check submissions.</small>
+          </p>
+        )}
 
 {/* OCR errors */}
         {checkError && (

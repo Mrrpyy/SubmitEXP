@@ -1,0 +1,14 @@
+-- turns an existing account into an admin
+-- nobody can sign up as admin, so the first admin has to be made here
+-- change YOUR_USERNAME to the account you registered in the extension
+
+USE submitexp;
+
+UPDATE users
+SET role = 'admin'
+WHERE username = 'YOUR_USERNAME';
+
+-- check it worked, role should say admin
+SELECT user_id, username, email, role
+FROM users
+WHERE username = 'YOUR_USERNAME';
