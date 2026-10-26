@@ -20,11 +20,14 @@ interface HealthResponse {
   status: string;
 }
 
+// the two roles the backend allows
+export type UserRole = 'student' | 'admin';
+
 export interface User {
   user_id: number;
   username: string;
   email: string;
-  role: string;
+  role: UserRole;
 }
 
 export interface LoginResponse {
@@ -182,4 +185,34 @@ export function awardAssignment(
     assignment,
     token
   );
+}
+
+// student only, the logged in student's points and level
+export interface StudentProgress {
+  username: string;
+  total_points: number;
+  current_level: number;
+  submissions_recorded: number;
+}
+
+export function getStudentProgress(token: string): Promise<StudentProgress> {
+  return apiRequest<StudentProgress>('/student/progress', undefined, token);
+}
+
+// admin only, every account and its points
+export interface AdminUserRow {
+  user_id: number;
+  username: string;
+  email: string;
+  role: UserRole;
+  total_points: number;
+}
+
+export function listUsers(token: string): Promise<AdminUserRow[]> {
+  return apiRequest<AdminUserRow[]>('/admin/users', undefined, token);
+}
+
+// admin only, makes another account a student or an admin
+export function changeUserRole(token: string, userId: number, role: UserRole): Promise<AdminUserRow> {
+  return apiRequest<AdminUserRow>(`/admin/users/${userId}/role`, { role }, token);
 }
