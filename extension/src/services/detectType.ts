@@ -17,7 +17,9 @@ const EXAM_WORDS = new RegExp(String.raw`\b(?:exam|exams|examination|midterm|mid
 const FINAL_WORD = new RegExp(String.raw`\bfinal\b${NOT_AN_EXAM_AFTER}`, 'i');
 
 // test but not test cases, test plan and other coding assignment names
-const TEST_WORDS = /\b(?:test|tests)\b(?!\s+(?:case|cases|plan|plans|suite|suites|report|driven|bank))/i;
+// Detect actual tests while excluding test-related assignments
+const TEST_WORDS =
+  /\btests?\b(?!\s+(?:#?\d+\s*[-:.)]?\s*)?(?:cases?|plans?|suites?|reports?|driven|banks?|corrections?|projects?|papers?|drafts?|reflections?|reviews?|labs?)\b)/i;
 
 // practice and review versions are low stakes, they stay a quiz or assignment
 const PRACTICE_WORDS = /\b(?:practice|sample|mock|review|study guide)\b/i;
