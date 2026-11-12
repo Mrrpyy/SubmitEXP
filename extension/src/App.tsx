@@ -12,6 +12,8 @@ import { parseSubmission } from './services/parse';
 import type { ParsedSubmission } from './services/parse';
 import {clearSession, loadSession, saveSession,} from './services/session';
 import { AuthRequestGuard } from './authRequestGuard';
+import { getStudentProgress } from './services/api';
+import type { StudentProgress } from './services/api';
 // Convert Canvas local dates to ISO 8601 timestamps, assumes Canvas displays dates in the computers timezone
 function canvasDateToISO(value: string): string {
   const match = value.match(
@@ -115,9 +117,58 @@ export default function App() {
       console.error('Popup setup failed:', error);
     });
   }, []);
+  const [progress, setProgress] =
+  useState<StudentProgress | null>(null);
+
+  const [progressError, setProgressError] =
+    useState<string | null>(null);
 
 // only students earn EXP, admins can look but not record
   const isStudent = user?.role === 'student';
+  useEffect(() => {
+    let cancelled = false;
+    setProgress(null);
+    setProgressError(null);
+
+    if (!user || user.role !== 'student') {
+      return;
+    }
+
+    const userId = user.user_id;
+
+    async function fetchProgress() {
+      try {
+        const session = await loadSession();
+
+        if (!session || session.user.user_id !== userId) {
+          return;
+        }
+
+        const result = await getStudentProgress(
+          session.token
+        );
+
+        if (!cancelled) {
+          setProgress(result);
+          setProgressError(null);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setProgressError(
+            error instanceof Error
+              ? error.message
+              : 'Unable to load progress'
+          );
+        }
+      }
+    }
+
+    void fetchProgress();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.user_id, user?.role]);
 
 // Restore saved login when popup opens
   useEffect(() => {
@@ -336,6 +387,19 @@ export default function App() {
       });
 
       setAwardResult(response);
+      try {
+        const updatedProgress = await getStudentProgress(
+          session.token
+        );
+
+        setProgress(updatedProgress);
+        setProgressError(null);
+      } catch {
+        setProgressError(
+          'EXP was recorded, but progress could not refresh.'
+        );
+      }
+
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
         setAwardError('This assignment has already been awarded EXP.');
@@ -381,6 +445,60 @@ export default function App() {
       ) : (
         <LoginForm onLoggedIn={handleLoggedIn} />
       )}
+{/* Student level and EXP progress */}
+{user && isStudent && (
+  <section className="panel level-panel">
+    <h2>Your Progress</h2>
+
+    {progress ? (
+      <>
+        <div className="level-header">
+          <strong>
+            Level {progress.current_level}
+          </strong>
+          <span>
+            {progress.total_points} Total EXP
+          </span>
+        </div>
+
+        <div
+          className="exp-track"
+          role="progressbar"
+          aria-label="Level progress"
+          aria-valuemin={0}
+          aria-valuemax={progress.exp_for_next_level}
+          aria-valuenow={progress.exp_in_level}
+        >
+          <div
+            className="exp-fill"
+            style={{
+              width: `${progress.progress_percent}%`,
+            }}
+          />
+        </div>
+
+        <p>
+          {progress.exp_in_level} /
+          {' '}{progress.exp_for_next_level} EXP
+        </p>
+
+        <small>
+          {progress.exp_to_next_level} EXP needed
+          for Level {progress.current_level + 1}
+        </small>
+
+        <small>
+          {progress.submissions_recorded}
+          {' '}submissions recorded
+        </small>
+      </>
+    ) : (
+      <p>
+        {progressError ?? 'Loading your progress...'}
+      </p>
+    )}
+  </section>
+)}
 
 {/* Extension status */}
       <section

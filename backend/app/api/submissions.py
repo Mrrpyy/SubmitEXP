@@ -8,6 +8,8 @@ from app.api.auth import UserInfo
 from app.api.roles import require_student
 from app.db.connection import DatabaseNotConfigured, get_engine
 from point_calculator import calculate_assignment_points
+from app.core.levels import EXP_PER_LEVEL
+
 
 router = APIRouter(prefix="/submissions", tags=["submissions"])
 
@@ -113,6 +115,20 @@ def award_assignment(
                     "points": points,
                 },
             )
+#Recalculate the level after adding EXP ,runs inside the existing database transaction
+            connection.execute(
+                text("""
+                    UPDATE user_progress
+                    SET current_level =
+                        FLOOR(total_points / :exp_per_level) + 1
+                    WHERE user_id = :user_id
+                """),
+                {
+                    "exp_per_level": EXP_PER_LEVEL,
+                    "user_id": user.user_id,
+                },
+            )
+
             progress = connection.execute(
                 text("""
                     SELECT total_points, current_level

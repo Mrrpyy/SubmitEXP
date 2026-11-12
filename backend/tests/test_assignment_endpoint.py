@@ -54,6 +54,7 @@ def mock_database(monkeypatch, *, duplicate=False):
             inserted,
             MagicMock(),
             MagicMock(),
+            MagicMock(),
             progress,
         ]
 
@@ -78,7 +79,7 @@ def test_assignment_award_updates_all_three_tables(
         "current_level": 1,
     }
     assert engine.begin.call_count == 1
-    assert connection.execute.call_count == 4
+    assert connection.execute.call_count == 5
     calls = connection.execute.call_args_list
     assert calls[0].args[1]["user_id"] == 3
     assert calls[1].args[1]["points"] == 15

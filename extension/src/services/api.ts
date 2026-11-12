@@ -193,6 +193,10 @@ export interface StudentProgress {
   total_points: number;
   current_level: number;
   submissions_recorded: number;
+  exp_in_level: number;
+  exp_for_next_level: number;
+  exp_to_next_level: number;
+  progress_percent: number;
 }
 
 export function getStudentProgress(token: string): Promise<StudentProgress> {

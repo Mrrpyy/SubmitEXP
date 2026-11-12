@@ -75,6 +75,10 @@ def test_student_sees_own_progress(client, monkeypatch):
         'total_points': 25,
         'current_level': 1,
         'submissions_recorded': 2,
+        'exp_in_level': 25,
+        'exp_for_next_level': 100,
+        'exp_to_next_level': 75,
+        'progress_percent': 25,
     }
     # only the logged in student's id is looked up
     assert asked_for == [3]

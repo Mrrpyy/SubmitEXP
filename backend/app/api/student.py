@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
-
+from app.core.levels import calculate_progress
 from app.api.auth import UserInfo
 from app.api.roles import require_student
 from app.db.connection import DatabaseNotConfigured, get_engine
@@ -16,7 +16,10 @@ class StudentProgress(BaseModel):
     total_points: int
     current_level: int
     submissions_recorded: int
-
+    exp_in_level: int
+    exp_for_next_level: int
+    exp_to_next_level: int
+    progress_percent: int
 
 # reads the progress row and counts the submissions for one student
 def load_progress(user_id: int) -> dict:
@@ -44,9 +47,11 @@ def my_progress(user: UserInfo = Depends(require_student)) -> StudentProgress:
         row = load_progress(user.user_id)
     except (DatabaseNotConfigured, SQLAlchemyError):
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Database is not available')
+    total_points = int(row["total_points"])
+    level_data = calculate_progress(total_points)
     return StudentProgress(
         username=user.username,
-        total_points=int(row['total_points']),
-        current_level=int(row['current_level']),
-        submissions_recorded=int(row['submissions_recorded']),
+        total_points=total_points,
+        submissions_recorded=int(row["submissions_recorded"]),
+        **level_data,
     )
