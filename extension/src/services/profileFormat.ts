@@ -24,7 +24,14 @@ export function formatLastSubmitted(value: string | null | undefined, now: Date 
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const startOfThatDay = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
   const daysAgo = Math.round((startOfToday - startOfThatDay) / DAY_MS);
-  if (daysAgo <= 0) return 'today';
+  if (daysAgo < 0) {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+  if (daysAgo === 0) return 'today';
   if (daysAgo === 1) return 'yesterday';
   if (daysAgo < 7) return `${daysAgo} days ago`;
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
