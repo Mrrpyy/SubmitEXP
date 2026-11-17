@@ -69,3 +69,19 @@ button.link, button.link:not(:disabled) { background: none; color: #4967d5; padd
 .level-panel small {
   margin-top: 6px;
 }
+
+
+/* ---------- profile dashboard ---------- */
+.profile-header { display: flex; align-items: center; gap: 10px; }
+.avatar { flex: none; width: 40px; height: 40px; border-radius: 50%; background: #4967d5; color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
+.profile-name { flex: 1; min-width: 0; }
+.profile-name h2 { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panel .profile-name p { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.role-badge { flex: none; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.role-student { background: #e6ecfb; color: #4967d5; }
+.role-admin { background: #fdf0e1; color: #b54708; }
+.member-since { margin-top: 8px; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.stat { background: #f6f8fc; border: 1px solid #e0e5ef; border-radius: 8px; padding: 8px 10px; }
+.stat strong { display: block; font-size: 18px; color: #172337; }
+.stat span { font-size: 11px; color: #63728b; }

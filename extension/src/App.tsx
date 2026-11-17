@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import RegistrationForm from './components/RegistrationForm';
 import LoginForm from './components/LoginForm';
 import BackendConnectionStatus from './components/BackendConnectionStatus';
+import ProfileDashboard from './components/ProfileDashboard';
 import {ApiError, awardAssignment, getCurrentUser, previewAssignmentPoints,} from './services/api';
 import type { AssignmentAwardResponse, User } from './services/api';
 import {captureCanvasScreenshot, getActiveTabUrl, getCanvasAssignmentIds,
@@ -427,21 +428,13 @@ export default function App() {
         Finish early. Level up.
       </p>
 
-{/* Authentication */}
+{/* ---------- profile dashboard ---------- */}
       {user ? (
-        <section className="panel">
-          <h2>Welcome, {user.username}</h2>
-          <p>Logged in as {user.email}</p>
-          <p>Role: <strong>{user.role}</strong></p>
-
-          <button
-            type="button"
-            className="link"
-            onClick={handleLogout}
-          >
-            Log out
-          </button>
-        </section>
+        <ProfileDashboard
+          user={user}
+          onLogout={handleLogout}
+          refreshKey={awardResult?.submission_id ?? 0}
+        />
       ) : (
         <LoginForm onLoggedIn={handleLoggedIn} />
       )}
