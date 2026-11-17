@@ -36,6 +36,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   async function loadAll() {
     setLoading(true);
     setError(null);
+    setStats(null);
+    setUsers([]);
     try {
       const token = await getToken();
       const [statsResult, usersResult] = await Promise.all([getAdminStats(token), listUsers(token)]);
@@ -63,9 +65,16 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       const token = await getToken();
       const updated = await changeUserRole(token, row.user_id, newRole);
       setUsers((current) => replaceUser(current, updated));
-      setNotice(`${updated.username} is now ${updated.role === 'admin' ? 'an admin' : 'a student'}.`);
-      // counts change after a role change
-      setStats(await getAdminStats(token));
+      setNotice(
+        `${updated.username} is now ${updated.role === 'admin' ? 'an admin' : 'a student'}.`
+      );
+      try {
+        setStats(await getAdminStats(token));
+      } catch {
+        setError(
+          'Role updated, but statistics could not refresh. Click Refresh to retry.'
+        );
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not change role');
     } finally {
