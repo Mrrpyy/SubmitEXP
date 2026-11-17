@@ -85,3 +85,22 @@ button.link, button.link:not(:disabled) { background: none; color: #4967d5; padd
 .stat { background: #f6f8fc; border: 1px solid #e0e5ef; border-radius: 8px; padding: 8px 10px; }
 .stat strong { display: block; font-size: 18px; color: #172337; }
 .stat span { font-size: 11px; color: #63728b; }
+
+
+/* ---------- admin interface ---------- */
+.admin-panel { margin-top: 12px; }
+.admin-title { display: flex; justify-content: space-between; align-items: center; }
+.admin-title button.link { margin-top: 0; font-size: 12px; }
+.stat-wide { grid-column: span 2; }
+.admin-filters { display: flex; gap: 6px; margin-top: 12px; }
+.admin-filters input { flex: 1; min-width: 0; padding: 8px; border: 1px solid #d0d7e2; border-radius: 8px; font-size: 12px; }
+.admin-filters select { padding: 8px; border: 1px solid #d0d7e2; border-radius: 8px; font-size: 12px; background: white; }
+.admin-list { list-style: none; margin: 10px 0 0; padding: 0; max-height: 260px; overflow-y: auto; }
+.admin-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid #e0e5ef; }
+.admin-user { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #526079; }
+.admin-user strong { color: #172337; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-user em { font-weight: 400; color: #63728b; }
+.admin-user > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-actions { display: flex; flex-direction: column; gap: 4px; }
+button.small-button { width: auto; margin-top: 0; padding: 6px 8px; font-size: 11px; white-space: nowrap; }
+button.small-button.confirm:not(:disabled) { background: #b54708; }

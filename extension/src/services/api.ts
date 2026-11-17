@@ -251,3 +251,18 @@ export function listUsers(token: string): Promise<AdminUserRow[]> {
 export function changeUserRole(token: string, userId: number, role: UserRole): Promise<AdminUserRow> {
   return apiRequest<AdminUserRow>(`/admin/users/${userId}/role`, { role }, token);
 }
+
+// ---------- admin interface ----------
+
+// admin only, totals for the whole app
+export interface AdminStats {
+  total_users: number;
+  students: number;
+  admins: number;
+  total_submissions: number;
+  total_points_awarded: number;
+}
+
+export function getAdminStats(token: string): Promise<AdminStats> {
+  return apiRequest<AdminStats>('/admin/stats', undefined, token);
+}

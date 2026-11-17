@@ -9,9 +9,11 @@ from app.api.auth import UserInfo
 from app.api.roles import require_admin
 from app.db.connection import DatabaseNotConfigured, get_engine
 
-# endpoints only admins can use
+# endpoints only admins can use, the admin interface (backlog item 18) is built on these
 router = APIRouter(prefix='/admin', tags=['admin'])
 
+
+# ---------- response shapes ----------
 
 # one row in the admin user list, no password hash
 class AdminUserRow(BaseModel):
@@ -29,9 +31,20 @@ class RoleChangeRequest(BaseModel):
     role: Literal['student', 'admin']
 
 
+# totals for the top of the admin interface
+class AdminStats(BaseModel):
+    total_users: int
+    students: int
+    admins: int
+    total_submissions: int
+    total_points_awarded: int
+
+
 def database_down() -> HTTPException:
     return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Database is not available')
 
+
+# ---------- database ----------
 
 # every account with its points, newest first
 def load_all_users() -> list[dict]:
@@ -59,6 +72,23 @@ def save_role(user_id: int, role: str) -> None:
         )
 
 
+# counts for the whole app in one query
+def load_stats() -> dict:
+    query = text(
+        'SELECT '
+        '  (SELECT COUNT(*) FROM users) AS total_users, '
+        "  (SELECT COUNT(*) FROM users WHERE role = 'student') AS students, "
+        "  (SELECT COUNT(*) FROM users WHERE role = 'admin') AS admins, "
+        '  (SELECT COUNT(*) FROM submissions) AS total_submissions, '
+        '  (SELECT COALESCE(SUM(points_awarded), 0) FROM point_transactions) AS total_points_awarded'
+    )
+    with get_engine().connect() as connection:
+        row = connection.execute(query).mappings().first()
+    return dict(row) if row else {}
+
+
+# ---------- endpoints ----------
+
 @router.get('/users', response_model=list[AdminUserRow])
 def list_users(admin: UserInfo = Depends(require_admin)) -> list[AdminUserRow]:
     try:
@@ -66,6 +96,16 @@ def list_users(admin: UserInfo = Depends(require_admin)) -> list[AdminUserRow]:
     except (DatabaseNotConfigured, SQLAlchemyError):
         raise database_down()
     return [AdminUserRow(**row) for row in rows]
+
+
+@router.get('/stats', response_model=AdminStats)
+def app_stats(admin: UserInfo = Depends(require_admin)) -> AdminStats:
+    try:
+        row = load_stats()
+    except (DatabaseNotConfigured, SQLAlchemyError):
+        raise database_down()
+    # mysql sum comes back as a decimal, so force ints
+    return AdminStats(**{field: int(row.get(field) or 0) for field in AdminStats.model_fields})
 
 
 # post instead of patch because the server only allows get and post from the extension
