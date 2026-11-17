@@ -61,8 +61,8 @@ describe('formatLastSubmitted', () => {
     expect(formatLastSubmitted(new Date(2026, 9, 1, 8, 0, 0).toISOString(), now)).toBe('Oct 1, 2026');
   });
 
-  it('treats a future date as today', () => {
-    expect(formatLastSubmitted(new Date(2026, 10, 17, 8, 0, 0).toISOString(), now)).toBe('today');
+  it('shows the actual date for future submissions', () => {
+    expect(formatLastSubmitted(new Date(2026, 10, 17, 8, 0, 0).toISOString(), now)).toBe('Nov 17, 2026');
   });
 });
 
