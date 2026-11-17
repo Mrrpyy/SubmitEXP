@@ -3,6 +3,7 @@ import RegistrationForm from './components/RegistrationForm';
 import LoginForm from './components/LoginForm';
 import BackendConnectionStatus from './components/BackendConnectionStatus';
 import ProfileDashboard from './components/ProfileDashboard';
+import AdminPanel from './components/AdminPanel';
 import {ApiError, awardAssignment, getCurrentUser, previewAssignmentPoints,} from './services/api';
 import type { AssignmentAwardResponse, User } from './services/api';
 import {captureCanvasScreenshot, getActiveTabUrl, getCanvasAssignmentIds,
@@ -492,6 +493,9 @@ export default function App() {
     )}
   </section>
 )}
+
+{/* ---------- admin interface ---------- */}
+      {user?.role === 'admin' && <AdminPanel currentUser={user} />}
 
 {/* Extension status */}
       <section
