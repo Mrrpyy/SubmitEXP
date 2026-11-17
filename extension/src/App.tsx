@@ -62,6 +62,10 @@ export default function App() {
     useState<ParsedSubmission | null>(null);
   const [checkError, setCheckError] =
     useState<string | null>(null);
+  const [rawOcrText, setRawOcrText] = useState<string | null>(null);
+  const [dueYear, setDueYear] = useState('');
+  const [submittedYear, setSubmittedYear] = useState('');
+  const previewRequest = useRef(0);
 // Assignment EXP preview
   const [previewPoints, setPreviewPoints] =
     useState<number | null>(null);
@@ -247,7 +251,11 @@ export default function App() {
     try {
       await queueSessionWrite(clearSession);
       setUser(null);
+      previewRequest.current += 1;
       setSubmission(null);
+      setRawOcrText(null);
+      setDueYear('');
+      setSubmittedYear('');
       setPreviewPoints(null);
       setPreviewError(null);
       setCheckError(null);
@@ -259,14 +267,107 @@ export default function App() {
       console.error('Logout failed:', error);
     }
   }
+async function loadExpPreview(parsed: ParsedSubmission) {
+  const request = ++previewRequest.current;
 
+  setPreviewPoints(null);
+  setPreviewError(null);
+  setDetailsConfirmed(false);
+
+  if (
+    parsed.type !== 'assignment' ||
+    !parsed.dueAt ||
+    !parsed.submittedAt
+  ) return;
+
+  try {
+    const due = canvasDateToISO(parsed.dueAt);
+    const submitted = canvasDateToISO(parsed.submittedAt);
+
+    const difference = Math.abs(
+      new Date(due).getTime() -
+      new Date(submitted).getTime()
+    );
+
+    const MAX_DIFFERENCE = 180 * 24 * 60 * 60 * 1000;
+
+    if (difference > MAX_DIFFERENCE) {
+      throw new Error(
+        'Dates are unusually far apart. Please verify the OCR results.'
+      );
+    }
+
+    const preview = await previewAssignmentPoints(
+      due,
+      submitted
+    );
+
+    if (request === previewRequest.current) {
+      setPreviewPoints(preview.points);
+    }
+  } catch (error) {
+    if (request === previewRequest.current) {
+      setPreviewError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to calculate EXP'
+      );
+    }
+  }
+}
+function invalidateYearSelection() {
+  previewRequest.current += 1;
+  setPreviewPoints(null);
+  setPreviewError(null);
+  setDetailsConfirmed(false);
+}
+async function handleApplyYears() {
+  if (
+    !rawOcrText ||
+    !submission ||
+    checking ||
+    awarding ||
+    awardResult
+  ) return;
+  invalidateYearSelection();
+  const validYear = (value: string) =>
+    /^\d{4}$/.test(value) &&
+    Number(value) >= 1000;
+  if (
+    (submission.missingYears.includes('dueAt') &&
+      !validYear(dueYear)) ||
+    (submission.missingYears.includes('submittedAt') &&
+      !validYear(submittedYear))
+  ) {
+    setPreviewError(
+      'Enter a valid four-digit year for each missing date.'
+    );
+    return;
+  }
+  const parsed = parseSubmission(rawOcrText, {
+    due: dueYear ? Number(dueYear) : undefined,
+    submitted: submittedYear ? Number(submittedYear) : undefined,
+  });
+  setSubmission(parsed);
+  if (!parsed.dueAt || !parsed.submittedAt) {
+    setPreviewError(
+      'Could not read the dates. Check the Canvas page and try again.'
+    );
+    return;
+  }
+  await loadExpPreview(parsed);
+}
 // Capture Canvas and calculate assignment EXP preview
   async function handleCheckSubmission() {
     if (checking || awarding || !user || !isStudent || !onCanvas) return;
 
     setChecking(true);
+    previewRequest.current += 1;
     setCheckError(null);
     setSubmission(null);
+    setRawOcrText(null);
+    setDueYear('');
+    setSubmittedYear('');
     setPreviewPoints(null);
     setPreviewError(null);
     setAssignmentIds(null);
@@ -290,50 +391,10 @@ export default function App() {
       const result = await recognizeScreenshot(screenshot);
       console.log('OCR TEXT:', result.text);
 // Extract assignment information
-      const parsed = parseSubmission(
-        result.text,
-        new Date().getFullYear()
-      );
-
-      setSubmission(parsed);
-      if (
-        parsed.type === 'assignment' &&
-        parsed.dueAt &&
-        parsed.submittedAt
-      ) {
-        try {
-          const due = canvasDateToISO(parsed.dueAt);
-          const submitted = canvasDateToISO(
-            parsed.submittedAt
-          );
-
-          const difference = Math.abs(
-            new Date(due).getTime() -
-            new Date(submitted).getTime()
-          );
-          const MAX_DIFFERENCE =
-            180 * 24 * 60 * 60 * 1000;
-
-          if (difference > MAX_DIFFERENCE) {
-            throw new Error(
-              'Dates are unusually far apart. ' +
-              'Please verify the OCR results.'
-            );
-          }
-          const preview = await previewAssignmentPoints(
-            due,
-            submitted
-          );
-
-          setPreviewPoints(preview.points);
-        } catch (error) {
-          setPreviewError(
-            error instanceof Error
-              ? error.message
-              : 'Unable to calculate EXP'
-          );
-        }
-      }
+    const parsed = parseSubmission(result.text);
+    setRawOcrText(result.text);
+    setSubmission(parsed);
+    await loadExpPreview(parsed);
     } catch (error) {
       setCheckError(
         error instanceof Error
@@ -580,6 +641,59 @@ export default function App() {
               Submitted:{' '}
               {submission.submittedAt ?? 'Not found'}
             </p>
+            {submission.type === 'assignment' &&
+              submission.missingYears.length > 0 && (
+                <div>
+                  <p className="form-error">
+                    Canvas did not show a year for one or more dates.
+                    Enter the correct year before calculating EXP.
+                  </p>
+            
+                  {submission.missingYears.includes('dueAt') && (
+                    <label>
+                      Due year
+                      <input
+                        type="number"
+                        min={1000}
+                        max={9999}
+                        value={dueYear}
+                        disabled={awarding || awardResult !== null}
+                        onChange={(event) => {
+                          setDueYear(event.target.value);
+                          invalidateYearSelection();
+                        }}
+                        placeholder="e.g. 2027"
+                      />
+                    </label>
+                  )}
+            
+                  {submission.missingYears.includes('submittedAt') && (
+                    <label>
+                      Submitted year
+                      <input
+                        type="number"
+                        min={1000}
+                        max={9999}
+                        value={submittedYear}
+                        disabled={awarding || awardResult !== null}
+                        onChange={(event) => {
+                          setSubmittedYear(event.target.value);
+                          invalidateYearSelection();
+                        }}
+                        placeholder="e.g. 2026"
+                      />
+                    </label>
+                  )}
+            
+                  <button
+                    type="button"
+                    disabled={checking || awarding || awardResult !== null}
+                    onClick={() => void handleApplyYears()}
+                  >
+                    Apply years and calculate EXP
+                  </button>
+                </div>
+              )}
 
             {submission.missing.length > 0 && (
               <p className="form-error">
