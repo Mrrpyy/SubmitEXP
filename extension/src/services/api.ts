@@ -203,6 +203,37 @@ export function getStudentProgress(token: string): Promise<StudentProgress> {
   return apiRequest<StudentProgress>('/student/progress', undefined, token);
 }
 
+// ---------- profile dashboard ----------
+
+// dashboard numbers, only students have these
+export interface ProfileStats {
+  total_points: number;
+  current_level: number;
+  exp_in_level: number;
+  exp_for_next_level: number;
+  exp_to_next_level: number;
+  progress_percent: number;
+  submissions_recorded: number;
+  early_submissions: number;
+  best_award: number;
+  average_award: number;
+  last_submitted_at: string | null;
+}
+
+export interface Profile {
+  user_id: number;
+  username: string;
+  email: string;
+  role: UserRole;
+  member_since: string | null;
+  stats: ProfileStats | null;
+}
+
+// any logged in user, returns their own profile
+export function getProfile(token: string): Promise<Profile> {
+  return apiRequest<Profile>('/profile', undefined, token);
+}
+
 // admin only, every account and its points
 export interface AdminUserRow {
   user_id: number;
