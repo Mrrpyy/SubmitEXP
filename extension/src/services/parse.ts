@@ -12,6 +12,7 @@ export type ParsedSubmission = {
   dueAt: string | null;
   submittedAt: string | null;
   missing: string[];
+  missingYears: Array<'dueAt' | 'submittedAt'>;
 };
 
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
@@ -72,24 +73,7 @@ function findTitle(lines: string[]): string | null {
   return null;
 }
 
-function nearbyYear(
-  match: RegExpMatchArray | null,
-  other: RegExpMatchArray | null
-): number | undefined {
-  if (!match || !other?.[3]) return undefined;
-
-  const firstMonth = MONTHS.indexOf(match[1].slice(0, 3).toLowerCase());
-  const otherMonth = MONTHS.indexOf(other[1].slice(0, 3).toLowerCase());
-
-  if (firstMonth < 0 || otherMonth < 0 ||
-      Math.abs(firstMonth - otherMonth) > 2) return undefined;
-
-  return Number(other[3]);
-}
-
-export function parseSubmission(
-  ocrText: string,
-  contextYear?: number
+export function parseSubmission(ocrText: string, years?: number | { due?: number; submitted?: number }
 ): ParsedSubmission {
   const lines = ocrText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
   const title = findTitle(lines);
@@ -97,15 +81,24 @@ export function parseSubmission(
   const dueMatch = ocrText.match(DUE);
   const submittedMatch = ocrText.match(SUBMITTED);
 
-  const dueAt = dateFromMatch(
-    dueMatch,
-    contextYear ?? nearbyYear(dueMatch, submittedMatch)
-  );
+  const dueYear =
+  typeof years === 'number' ? years : years?.due;
 
-  const submittedAt = dateFromMatch(
-    submittedMatch,
-    contextYear ?? nearbyYear(submittedMatch, dueMatch)
-  );
+const submittedYear =
+  typeof years === 'number' ? years : years?.submitted;
+
+const dueAt = dateFromMatch(dueMatch, dueYear);
+const submittedAt = dateFromMatch(submittedMatch, submittedYear);
+
+const missingYears: ParsedSubmission['missingYears'] = [];
+
+if (dueMatch && !dueMatch[3]) {
+  missingYears.push('dueAt');
+}
+
+if (submittedMatch && !submittedMatch[3]) {
+  missingYears.push('submittedAt');
+}
 
 // tests and exams are detected in detectType.ts
   const { type, reason: typeReason } = detectSubmissionType(title, ocrText);
@@ -120,5 +113,5 @@ export function parseSubmission(
     missing.push('submission');
   }
 
-  return { title, type, typeReason, dueAt, submittedAt, missing };
+  return { title, type, typeReason, dueAt, submittedAt, missing, missingYears,};
 }
