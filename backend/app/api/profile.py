@@ -45,6 +45,7 @@ class ProfileResponse(BaseModel):
 def load_member_since(user_id: int) -> datetime | None:
     query = text('SELECT created_at FROM users WHERE user_id = :user_id')
     with get_engine().connect() as connection:
+        connection.execute(text("SET time_zone = '+00:00'"))
         row = connection.execute(query, {'user_id': user_id}).mappings().first()
     return row['created_at'] if row else None
 
@@ -64,6 +65,7 @@ def load_stats(user_id: int) -> dict:
         'WHERE s.user_id = :user_id'
     )
     with get_engine().connect() as connection:
+        connection.execute(text("SET time_zone = '+00:00'"))
         row = connection.execute(query, {'user_id': user_id}).mappings().first()
     return dict(row) if row else {}
 
