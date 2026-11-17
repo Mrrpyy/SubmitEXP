@@ -26,7 +26,9 @@ export default function ProfileDashboard({ user, onLogout, refreshKey }: Profile
 
   useEffect(() => {
     let cancelled = false;
+    setProfile(null);
     setError(null);
+
 
     async function fetchProfile() {
       try {
@@ -46,7 +48,7 @@ export default function ProfileDashboard({ user, onLogout, refreshKey }: Profile
     };
   }, [user.user_id, user.role, refreshKey]);
 
-  const stats = profile?.stats ?? null;
+  const stats = profile?.user_id === user.user_id? profile.stats: null;
 
   // ---------- account card ----------
 
@@ -64,7 +66,7 @@ export default function ProfileDashboard({ user, onLogout, refreshKey }: Profile
       </div>
 
       <small className="member-since">
-        Member since {profile ? formatMemberSince(profile.member_since) : '...'}
+        Member since {profile && profile.user_id === user.user_id? formatMemberSince(profile.member_since) : '...'}
       </small>
 
       {error && <p className="form-error">{error}</p>}
