@@ -76,16 +76,21 @@ def insert_user(username: str, email: str, password_hash: str) -> int:
 
 
 # every new account is a student, nobody can sign up as admin
+
 @router.post('/register', status_code=status.HTTP_201_CREATED, response_model=RegisterResponse)
 def register(body: RegisterRequest) -> RegisterResponse:
-    taken = find_taken_field(body.username, body.email)
-    if taken:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f'That {taken} is already in use')
     try:
-        user_id = insert_user(body.username, body.email, hash_password(body.password))
+        taken = find_taken_field(body.username, body.email)
+    except (DatabaseNotConfigured, SQLAlchemyError):
+        raise HTTPException( status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Database is not available')
+    if taken:
+        raise HTTPException( status_code=status.HTTP_409_CONFLICT, detail=f'That {taken} is already in use')
+    try:
+        user_id = insert_user( body.username, body.email, hash_password(body.password))
     except IntegrityError:
-        # two sign ups with the same name at the same moment, the database unique rule catches the second
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='That username or email is already in use')
+    except (DatabaseNotConfigured, SQLAlchemyError):
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Database is not available')
     return RegisterResponse(user_id=user_id, username=body.username, email=body.email, role='student')
 
 # what the extension sends when someone logs in, they can type their username or their email
