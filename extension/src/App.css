@@ -6,6 +6,22 @@ h1 { margin: 10px 0 0; font-size: 29px; letter-spacing: -1px; }
 h1 span { color: #4967d5; }
 .motto { margin: 0 0 20px; font-size: 13px; color: #63728b; }
 .panel { background: white; border: 1px solid #e0e5ef; border-radius: 12px; padding: 15px; box-shadow: 0 8px 20px #0d205014; }
+
+/* ---------- student leaderboard ---------- */
+.leaderboard-panel { margin-top: 12px; }
+.leaderboard-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.leaderboard-heading h2 { margin: 0; }
+.leaderboard-heading button.link { margin: 0; font-size: 12px; }
+.leaderboard-list { list-style: none; padding: 0; margin: 12px 0 0; }
+.leaderboard-row { display: flex; align-items: center; gap: 9px; padding: 10px 4px; border-top: 1px solid #e0e5ef; }
+.leaderboard-self { background: #f1f5ff; border-radius: 6px; }
+.leaderboard-rank { flex: 0 0 30px; font-weight: 800; font-size: 13px; color: #4967d5; }
+.leaderboard-user { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.leaderboard-user strong { font-size: 12px; overflow-wrap: anywhere; }
+.leaderboard-user span { font-size: 10px; color: #63728b; }
+.leaderboard-exp { flex: 0 0 auto; font-size: 12px; color: #172337; white-space: nowrap; }
+.leaderboard-standing { margin-top: 12px; padding: 8px; background: #f1f5ff; border-radius: 8px; }
+
 h2 { margin: 0 0 6px; font-size: 16px; }
 .panel p { color: #526079; line-height: 1.5; font-size: 12px; }
 button { display: block; margin-top: 15px; width: 100%; padding: 10px; border: 0; border-radius: 8px; background: #dfe4ee; color: #8a95aa; font-weight: 700; cursor: not-allowed; }
@@ -85,6 +101,25 @@ button.link, button.link:not(:disabled) { background: none; color: #4967d5; padd
 .stat { background: #f6f8fc; border: 1px solid #e0e5ef; border-radius: 8px; padding: 8px 10px; }
 .stat strong { display: block; font-size: 18px; color: #172337; }
 .stat span { font-size: 11px; color: #63728b; }
+
+
+/* ---------- separate submission confirmation screen ---------- */
+.submission-confirmation { margin-top: 12px; }
+.submission-confirmation h2 { margin-bottom: 8px; }
+.confirmation-step { margin: 0 0 8px !important; color: #4967d5 !important; font-weight: 700; font-size: 11px !important; }
+.confirmation-details { margin: 14px 0; border-top: 1px solid #e0e5ef; }
+.confirmation-details > div { padding: 8px 0; border-bottom: 1px solid #e0e5ef; }
+.confirmation-details dt { color: #63728b; font-size: 11px; }
+.confirmation-details dd { margin: 2px 0 0; color: #172337; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.confirmation-exp { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px; background: #edf2ff; border-radius: 8px; padding: 12px; color: #172337; font-size: 12px; }
+.confirmation-exp strong { color: #4967d5; font-size: 18px; }
+.confirmation-disclaimer { font-size: 11px !important; }
+.confirmation-checkbox { display: flex; gap: 9px; margin-top: 12px; color: #172337; font-size: 12px; line-height: 1.5; cursor: pointer; }
+.confirmation-checkbox input { flex: none; width: 16px; height: 16px; margin: 1px 0 0; }
+.confirmation-actions { display: flex; flex-direction: column-reverse; gap: 8px; margin-top: 14px; }
+.confirmation-actions button { margin-top: 0; }
+.confirmation-actions .confirmation-back:not(:disabled) { background: #e8edf7; color: #31466e; }
+
 
 
 /* ---------- admin interface ---------- */

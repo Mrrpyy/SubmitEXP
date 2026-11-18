@@ -4,6 +4,8 @@ import LoginForm from './components/LoginForm';
 import BackendConnectionStatus from './components/BackendConnectionStatus';
 import ProfileDashboard from './components/ProfileDashboard';
 import AdminPanel from './components/AdminPanel';
+import Leaderboard from './components/Leaderboard';
+import SubmissionConfirmation from './components/SubmissionConfirmation';
 import {ApiError, awardAssignment, getCurrentUser, previewAssignmentPoints,} from './services/api';
 import type { AssignmentAwardResponse, User } from './services/api';
 import {captureCanvasScreenshot, getActiveTabUrl, getCanvasAssignmentIds,
@@ -76,6 +78,7 @@ export default function App() {
     useState<CanvasAssignmentIds | null>(null);
   const [detailsConfirmed, setDetailsConfirmed] =
     useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
 // EXP recording for local prototype tests; OCR is not independent proof of submission
   const [awarding, setAwarding] = useState(false);
   const [awardResult, setAwardResult] =
@@ -243,6 +246,19 @@ export default function App() {
     }
 
     setUser(loggedInUser);
+    // Never carry a previous user's OCR result into another login.
+    previewRequest.current += 1;
+    setReviewOpen(false);
+    setSubmission(null);
+    setRawOcrText(null);
+    setDueYear('');
+    setSubmittedYear('');
+    setAssignmentIds(null);
+    setPreviewPoints(null);
+    setPreviewError(null);
+    setAwardResult(null);
+    setAwardError(null);
+    setDetailsConfirmed(false);
   }
 // Handle logout
   async function handleLogout() {
@@ -260,6 +276,7 @@ export default function App() {
       setPreviewError(null);
       setCheckError(null);
       setAssignmentIds(null);
+      setReviewOpen(false);
       setDetailsConfirmed(false);
       setAwardResult(null);
       setAwardError(null);
@@ -272,6 +289,7 @@ async function loadExpPreview(parsed: ParsedSubmission) {
 
   setPreviewPoints(null);
   setPreviewError(null);
+  setReviewOpen(false);
   setDetailsConfirmed(false);
 
   if (
@@ -319,6 +337,7 @@ function invalidateYearSelection() {
   previewRequest.current += 1;
   setPreviewPoints(null);
   setPreviewError(null);
+  setReviewOpen(false);
   setDetailsConfirmed(false);
 }
 async function handleApplyYears() {
@@ -371,6 +390,7 @@ async function handleApplyYears() {
     setPreviewPoints(null);
     setPreviewError(null);
     setAssignmentIds(null);
+    setReviewOpen(false);
     setDetailsConfirmed(false);
     setAwardResult(null);
     setAwardError(null);
@@ -406,10 +426,25 @@ async function handleApplyYears() {
     }
   }
 
+// Open the final review step without writing any EXP.
+  function handleReviewSubmission() {
+    if (
+      checking || awarding || !user || !isStudent ||
+      !assignmentIds || !submission ||
+      submission.type !== 'assignment' || !submission.title?.trim() ||
+      !submission.dueAt || !submission.submittedAt ||
+      previewPoints === null || previewError !== null || awardResult !== null
+    ) return;
+
+    setDetailsConfirmed(false);
+    setAwardError(null);
+    setReviewOpen(true);
+  }
+
 // Record confirmed OCR-derived submission as EXP for local prototype testing
   async function handleAwardAssignment() {
     if (
-      awarding || checking || !user || !detailsConfirmed || !assignmentIds ||
+      awarding || checking || !reviewOpen || !user || !isStudent || !detailsConfirmed || !assignmentIds ||
       !submission || submission.type !== 'assignment' ||
       !submission.title?.trim() || !submission.dueAt ||
       !submission.submittedAt || previewPoints === null ||
@@ -436,8 +471,8 @@ async function handleApplyYears() {
 
 // Use the existing stored login token
       const session = await loadSession();
-      if (!session) {
-        throw new Error('Your login has expired. Please sign in again.');
+      if (!session || session.user.user_id !== user.user_id || session.user.role !== 'student') {
+        throw new Error('Your login has changed or expired. Please sign in again.');
       }
 
 // Only send extracted metadata, never the screenshot
@@ -476,6 +511,35 @@ async function handleApplyYears() {
     } finally {
       setAwarding(false);
     }
+  }
+
+  // Separate confirmation/success screen, rather than an inline form.
+  if (reviewOpen && user && isStudent && submission && assignmentIds && previewPoints !== null) {
+    return (
+      <main className="shell">
+        <div className="tag">SUBMITEXP</div>
+        <h1>Submit<span>EXP</span></h1>
+        <SubmissionConfirmation
+          submission={submission}
+          assignmentIds={assignmentIds}
+          previewPoints={previewPoints}
+          confirmed={detailsConfirmed}
+          recording={awarding}
+          result={awardResult}
+          error={awardError}
+          onConfirmedChange={setDetailsConfirmed}
+          onBack={() => {
+            setDetailsConfirmed(false);
+            setReviewOpen(false);
+          }}
+          onRecord={() => void handleAwardAssignment()}
+          onDone={() => {
+            setReviewOpen(false);
+            setDetailsConfirmed(false);
+          }}
+        />
+      </main>
+    );
   }
 
   return (
@@ -554,6 +618,9 @@ async function handleApplyYears() {
     )}
   </section>
 )}
+
+{/* Student EXP leaderboard */}
+      {user && <Leaderboard key={user.user_id} user={user} refreshKey={awardResult?.submission_id ?? 0} />}
 
 {/* ---------- admin interface ---------- */}
       {user?.role === 'admin' && <AdminPanel currentUser={user} />}
@@ -730,74 +797,26 @@ async function handleApplyYears() {
           </div>
         )}
 
-{/* Local review and test EXP recording */}
-        {previewPoints !== null && assignmentIds && (
-          <div style={{ marginTop: 12 }}>
-            <h3>Verify Submission</h3>
-
-            <p>
-              Canvas Course ID: {assignmentIds.canvas_course_id}
-            </p>
-
-            <p>
-              Canvas Assignment ID: {assignmentIds.canvas_assignment_id}
-            </p>
-
-            <p>
-              Computer timezone:{' '}
-              {Intl.DateTimeFormat().resolvedOptions().timeZone}
-            </p>
-
-            <label>
-              <input
-                type="checkbox"
-                checked={detailsConfirmed}
-                disabled={awarding || awardResult !== null}
-                onChange={(event) =>
-                  setDetailsConfirmed(event.target.checked)
-                }
-              />
-              {' '}I have checked the assignment dates and confirmed
-              that Canvas displays times in my computer's timezone.
-            </label>
-
-            {detailsConfirmed && (
-              <div>
-                <p>
-                  Submission confirmed locally. Test only: the backend
-                  cannot independently verify OCR-derived Canvas dates.
-                </p>
-                <button
-                  type="button"
-                  disabled={
-                    awarding || checking || awardResult !== null ||
-                    !submission?.title?.trim() ||
-                    submission?.type !== 'assignment' ||
-                    !submission?.dueAt || !submission?.submittedAt
-                  }
-                  onClick={handleAwardAssignment}
-                >
-                  {awarding ? 'Recording...' : 'Record EXP (test only)'}
-                </button>
-              </div>
-            )}
-
-            {awardResult && (
-              <div>
-                <h3>EXP Recorded</h3>
-                <p>Points awarded: {awardResult.points_awarded}</p>
-                <p>Total EXP: {awardResult.total_points}</p>
-                <p>Current level: {awardResult.current_level}</p>
-              </div>
-            )}
-
-            {awardError && (
-              <p className="form-error">{awardError}</p>
-            )}
+{/* Open dedicated confirmation screen (no EXP recorded yet) */}
+        {previewPoints !== null && assignmentIds && !awardResult && (
+          <div className="review-ready" style={{ marginTop: 12 }}>
+            <h3>Ready to review</h3>
+            <p>No EXP has been recorded yet. Review the detected information before confirming.</p>
+            <button
+              type="button"
+              disabled={
+                checking || awarding || !submission?.title?.trim() ||
+                submission?.type !== 'assignment' || !submission?.dueAt ||
+                !submission?.submittedAt || previewError !== null
+              }
+              onClick={handleReviewSubmission}
+            >
+              Review submission
+            </button>
           </div>
         )}
 
-{/* EXP preview errors */}
+        {/* EXP preview errors */}
         {previewError && (
           <p className="form-error">
             {previewError}

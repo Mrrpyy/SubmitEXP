@@ -203,6 +203,27 @@ export function getStudentProgress(token: string): Promise<StudentProgress> {
   return apiRequest<StudentProgress>('/student/progress', undefined, token);
 }
 
+// Authenticated rankings: public usernames and EXP, no emails.
+export interface LeaderboardEntry {
+  rank: number;
+  user_id: number;
+  username: string;
+  total_points: number;
+  current_level: number;
+  submissions_recorded: number;
+}
+
+export interface LeaderboardResponse {
+  total_students: number;
+  leaders: LeaderboardEntry[];
+  your_rank: number | null;
+  your_total_points: number | null;
+}
+
+export function getLeaderboard(token: string): Promise<LeaderboardResponse> {
+  return apiRequest<LeaderboardResponse>('/leaderboard', undefined, token);
+}
+
 // ---------- profile dashboard ----------
 
 // dashboard numbers, only students have these
