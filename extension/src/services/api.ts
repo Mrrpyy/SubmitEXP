@@ -266,3 +266,39 @@ export interface AdminStats {
 export function getAdminStats(token: string): Promise<AdminStats> {
   return apiRequest<AdminStats>('/admin/stats', undefined, token);
 }
+
+// ---------- admin: individual submission history ----------
+
+export interface AdminSubmissionRow {
+  submission_id: number;
+  assignment_title: string;
+  course_name: string | null;
+  submission_type: SubmissionType;
+  due_at: string | null;
+  submitted_at: string | null;
+  created_at: string;
+  canvas_course_id: number | null;
+  canvas_assignment_id: number | null;
+  points_awarded: number | null;
+}
+
+export interface AdminSubmissionPage {
+  user_id: number;
+  total: number;
+  limit: number;
+  offset: number;
+  submissions: AdminSubmissionRow[];
+}
+
+export function getAdminUserSubmissions(
+  token: string,
+  userId: number,
+  limit = 20,
+  offset = 0,
+): Promise<AdminSubmissionPage> {
+  return apiRequest<AdminSubmissionPage>(
+    `/admin/users/${userId}/submissions?limit=${limit}&offset=${offset}`,
+    undefined,
+    token,
+  );
+}

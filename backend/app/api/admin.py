@@ -1,6 +1,7 @@
+from datetime import datetime
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -38,6 +39,28 @@ class AdminStats(BaseModel):
     admins: int
     total_submissions: int
     total_points_awarded: int
+
+
+# one submission in an administrator's read-only history view
+class AdminSubmissionRow(BaseModel):
+    submission_id: int
+    assignment_title: str
+    course_name: str | None
+    submission_type: str
+    due_at: datetime | None
+    submitted_at: datetime | None
+    created_at: datetime
+    canvas_course_id: int | None
+    canvas_assignment_id: int | None
+    points_awarded: int | None
+
+
+class AdminSubmissionPage(BaseModel):
+    user_id: int
+    total: int
+    limit: int
+    offset: int
+    submissions: list[AdminSubmissionRow]
 
 
 def database_down() -> HTTPException:
@@ -87,6 +110,39 @@ def load_stats() -> dict:
     return dict(row) if row else {}
 
 
+# Page through one account's submissions. A missing EXP transaction stays null,
+# rather than being reported as a zero-point award.
+def load_submission_history(user_id: int, limit: int, offset: int) -> tuple[int, list[dict]] | None:
+    with get_engine().connect() as connection:
+        # TIMESTAMP (created_at) is returned in UTC; DATETIME values are stored as UTC.
+        connection.execute(text("SET time_zone = '+00:00'"))
+        found = connection.execute(
+            text('SELECT 1 FROM users WHERE user_id = :user_id'),
+            {'user_id': user_id},
+        ).first()
+        if found is None:
+            return None
+
+        total = connection.execute(
+            text('SELECT COUNT(*) FROM submissions WHERE user_id = :user_id'),
+            {'user_id': user_id},
+        ).scalar_one()
+        rows = connection.execute(
+            text(
+                'SELECT s.submission_id, s.assignment_title, s.course_name, '
+                's.submission_type, s.due_at, s.submitted_at, s.created_at, '
+                's.canvas_course_id, s.canvas_assignment_id, t.points_awarded '
+                'FROM submissions s '
+                'LEFT JOIN point_transactions t ON t.submission_id = s.submission_id '
+                'WHERE s.user_id = :user_id '
+                'ORDER BY s.submitted_at DESC, s.submission_id DESC '
+                'LIMIT :limit OFFSET :offset'
+            ),
+            {'user_id': user_id, 'limit': limit, 'offset': offset},
+        ).mappings().all()
+    return int(total), [dict(row) for row in rows]
+
+
 # ---------- endpoints ----------
 
 @router.get('/users', response_model=list[AdminUserRow])
@@ -106,6 +162,29 @@ def app_stats(admin: UserInfo = Depends(require_admin)) -> AdminStats:
         raise database_down()
     # mysql sum comes back as a decimal, so force ints
     return AdminStats(**{field: int(row.get(field) or 0) for field in AdminStats.model_fields})
+
+
+@router.get('/users/{user_id}/submissions', response_model=AdminSubmissionPage)
+def user_submissions(
+    user_id: int,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    admin: UserInfo = Depends(require_admin),
+) -> AdminSubmissionPage:
+    try:
+        result = load_submission_history(user_id, limit, offset)
+    except (DatabaseNotConfigured, SQLAlchemyError):
+        raise database_down()
+    if result is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
+    total, rows = result
+    return AdminSubmissionPage(
+        user_id=user_id,
+        total=total,
+        limit=limit,
+        offset=offset,
+        submissions=[AdminSubmissionRow(**row) for row in rows],
+    )
 
 
 # post instead of patch because the server only allows get and post from the extension

@@ -104,3 +104,16 @@ button.link, button.link:not(:disabled) { background: none; color: #4967d5; padd
 .admin-actions { display: flex; flex-direction: column; gap: 4px; }
 button.small-button { width: auto; margin-top: 0; padding: 6px 8px; font-size: 11px; white-space: nowrap; }
 button.small-button.confirm:not(:disabled) { background: #b54708; }
+
+/* ---------- admin submission history ---------- */
+.admin-history { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e0e5ef; }
+.admin-history h3 { font-size: 13px; margin: 0; overflow-wrap: anywhere; }
+.admin-history .admin-title button.link { margin-top: 0; }
+.history-count { margin: 8px 0; }
+.history-list { list-style: none; padding: 0; margin: 8px 0; max-height: 320px; overflow-y: auto; }
+.history-entry { padding: 10px 0; border-top: 1px solid #e0e5ef; font-size: 11px; line-height: 1.65; color: #526079; overflow-wrap: anywhere; }
+.history-entry-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; color: #172337; }
+.history-entry-heading strong { min-width: 0; }
+.history-points { flex: none; font-weight: 700; color: #067647; }
+.history-pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; }
+.history-pagination button.small-button { flex: none; }

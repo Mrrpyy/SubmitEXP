@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import AdminSubmissionHistory from './AdminSubmissionHistory';
 import { changeUserRole, getAdminStats, listUsers } from '../services/api';
 import type { AdminStats, AdminUserRow, User } from '../services/api';
 import { loadSession } from '../services/session';
@@ -22,6 +23,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const [pendingId, setPendingId] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [historyUser, setHistoryUser] = useState<AdminUserRow | null>(null);
 
   // ---------- loading ----------
 
@@ -34,6 +36,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   }
 
   async function loadAll() {
+    setHistoryUser(null);
     setLoading(true);
     setError(null);
     setStats(null);
@@ -159,42 +162,63 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
               </span>
             </div>
 
-            {canChangeRole(row, currentUser.user_id) && (
-              pendingId === row.user_id ? (
-                <div className="admin-actions">
-                  <button
-                    type="button"
-                    className="small-button confirm"
-                    disabled={savingId !== null}
-                    onClick={() => void confirmRoleChange(row)}
-                  >
-                    {savingId === row.user_id ? 'Saving...' : 'Confirm'}
-                  </button>
+            <div className="admin-actions">
+              <button
+                type="button"
+                className="small-button"
+                onClick={() => {
+                  setHistoryUser((previous) => previous?.user_id === row.user_id ? null : row);
+                }}
+                aria-expanded={historyUser?.user_id === row.user_id}
+              >
+                {historyUser?.user_id === row.user_id ? 'Hide history' : 'History'}
+              </button>
+              {canChangeRole(row, currentUser.user_id) && (
+                pendingId === row.user_id ? (
+                  <>
+                    <button
+                      type="button"
+                      className="small-button confirm"
+                      disabled={savingId !== null}
+                      onClick={() => void confirmRoleChange(row)}
+                    >
+                      {savingId === row.user_id ? 'Saving...' : 'Confirm'}
+                    </button>
+                    <button
+                      type="button"
+                      className="small-button"
+                      disabled={savingId !== null}
+                      onClick={() => setPendingId(null)}
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
                   <button
                     type="button"
                     className="small-button"
                     disabled={savingId !== null}
-                    onClick={() => setPendingId(null)}
+                    onClick={() => setPendingId(row.user_id)}
                   >
-                    Cancel
+                    Make {otherRole(row.role)}
                   </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className="small-button"
-                  disabled={savingId !== null}
-                  onClick={() => setPendingId(row.user_id)}
-                >
-                  Make {otherRole(row.role)}
-                </button>
-              )
-            )}
+                )
+              )}
+            </div>
           </li>
         ))}
       </ul>
 
       {!loading && shown.length === 0 && <p>No users match.</p>}
+
+      {historyUser && (
+        <AdminSubmissionHistory
+          key={`${currentUser.user_id}:${historyUser.user_id}`}
+          currentUser={currentUser}
+          selectedUser={historyUser}
+          onClose={() => setHistoryUser(null)}
+        />
+      )}
     </section>
   );
 }
