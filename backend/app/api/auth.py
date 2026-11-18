@@ -4,22 +4,18 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-
 from app.core.passwords import hash_password, verify_password
 from app.core.tokens import TokensNotConfigured, create_access_token, read_user_id
 from app.db.connection import DatabaseNotConfigured, get_engine
-
 # user registration (backlog item 2) and login (backlog item 3)
 router = APIRouter(prefix='/auth', tags=['auth'])
 
-
-# what the extension sends when someone signs up
+#what the extension sends when someone signs up
 class RegisterRequest(BaseModel):
-    # letters, numbers and underscores only, 3 to 50 characters to match the database
+# letters, numbers and underscores only, 3 to 50 characters to match the database
     username: str = Field(min_length=3, max_length=50, pattern=r'^[A-Za-z0-9_]+$')
     email: EmailStr
     password: str = Field(min_length=8)
-
     @field_validator('password')
     @classmethod
     def password_not_too_long(cls, value: str) -> str:
@@ -31,11 +27,11 @@ class RegisterRequest(BaseModel):
     @field_validator('email')
     @classmethod
     def lowercase_email(cls, value: str) -> str:
-        # same email in different capitals counts as one account
+# same email in different capitals counts as one account
         return value.lower()
 
 
-# what we send back, no password or hash ever leaves the server
+#what we send back, no password or hash ever leaves the server
 class RegisterResponse(BaseModel):
     user_id: int
     username: str
@@ -43,7 +39,7 @@ class RegisterResponse(BaseModel):
     role: str
 
 
-# returns username or email if one is already taken, otherwise None
+#returns username or email if one is already taken, otherwise None
 def find_taken_field(username: str, email: str) -> str | None:
     query = text(
         'SELECT username, email FROM users WHERE username = :username OR email = :email LIMIT 1'
@@ -52,7 +48,7 @@ def find_taken_field(username: str, email: str) -> str | None:
         row = connection.execute(query, {'username': username, 'email': email}).mappings().first()
     if row is None:
         return None
-    # database ignores capital letters, so compare in lowercase too
+# database ignores capital letters, so compare in lowercase too
     return 'username' if row['username'].lower() == username.lower() else 'email'
 
 
