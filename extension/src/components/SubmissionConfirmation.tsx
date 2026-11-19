@@ -18,18 +18,8 @@ type Props = {
 
 /** A separate review step. Nothing is recorded until the user confirms. */
 export default function SubmissionConfirmation({
-  submission,
-  assignmentIds,
-  previewPoints,
-  confirmed,
-  recording,
-  result,
-  error,
-  onConfirmedChange,
-  onBack,
-  onRecord,
-  onDone,
-}: Props) {
+  submission, assignmentIds, previewPoints, confirmed, recording, result, error, onConfirmedChange, onBack, onRecord,
+  onDone, }: Props) {
   return (
     <section className="panel submission-confirmation" aria-label="Submission confirmation">
       {result ? (
@@ -73,10 +63,7 @@ export default function SubmissionConfirmation({
             verified against Canvas by the backend. No EXP is recorded until you confirm.
           </p>
           <label className="confirmation-checkbox">
-            <input
-              type="checkbox"
-              checked={confirmed}
-              disabled={recording}
+            <input type="checkbox" checked={confirmed} disabled={recording}
               onChange={(event) => onConfirmedChange(event.target.checked)}
             />
             <span>

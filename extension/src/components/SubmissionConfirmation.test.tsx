@@ -10,18 +10,13 @@ const submission: ParsedSubmission = {
   dueAt: '2027-01-05 23:59:00',
   submittedAt: '2026-12-30 20:00:00',
   missing: [],
-  missingYears: ['dueAt'],
-};
+  missingYears: ['dueAt'], };
 
 const ids = { canvas_course_id: 51, canvas_assignment_id: 72 };
 
 function show(overrides: Partial<Parameters<typeof SubmissionConfirmation>[0]> = {}) {
   return renderToStaticMarkup(
-    <SubmissionConfirmation
-      submission={submission}
-      assignmentIds={ids}
-      previewPoints={75}
-      confirmed={false}
+    <SubmissionConfirmation submission={submission} assignmentIds={ids} previewPoints={75} confirmed={false}
       recording={false}
       result={null}
       error={null}

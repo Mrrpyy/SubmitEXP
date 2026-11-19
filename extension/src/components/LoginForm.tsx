@@ -8,7 +8,8 @@ type Props = {
 };
 
 export default function LoginForm({ onLoggedIn }: Props) {
-  const [identifier, setIdentifier] = useState(''); // username or email
+// username or email
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,24 +35,12 @@ export default function LoginForm({ onLoggedIn }: Props) {
 
       <form onSubmit={handleSubmit}>
         <label htmlFor="login-identifier">Username or email</label>
-        <input
-          id="login-identifier"
-          type="text"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
-          autoComplete="username"
-          required
-        />
+        <input id="login-identifier" type="text" value={identifier} onChange={(e) => setIdentifier(e.target.value)}
+          autoComplete="username" required />
 
         <label htmlFor="login-password">Password</label>
-        <input
-          id="login-password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          required
-        />
+        <input id="login-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password" required />
 
         <button type="submit" disabled={loading}>
           {loading ? 'Logging in...' : 'Log In'}

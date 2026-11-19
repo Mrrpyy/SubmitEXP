@@ -13,8 +13,7 @@ function formatDate(value: string | null): string {
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
-    hour: 'numeric', minute: '2-digit',
-  });
+    hour: 'numeric', minute: '2-digit', });
 }
 
 interface Props {
@@ -41,12 +40,8 @@ export default function AdminSubmissionHistory({ currentUser, selectedUser, onCl
         if (!session || session.user.user_id !== currentUser.user_id) {
           throw new Error('Your login has expired. Please sign in again.');
         }
-        const result = await getAdminUserSubmissions(
-          session.token,
-          selectedUser.user_id,
-          PAGE_SIZE,
-          pageIndex * PAGE_SIZE,
-        );
+        const result = await getAdminUserSubmissions(session.token, selectedUser.user_id, PAGE_SIZE,
+          pageIndex * PAGE_SIZE,);
         if (!cancelled) setHistory(result);
       } catch (err) {
         if (!cancelled) {
@@ -99,19 +94,13 @@ export default function AdminSubmissionHistory({ currentUser, selectedUser, onCl
             ))}
           </ul>
           <div className="history-pagination">
-            <button
-              type="button"
-              className="small-button"
-              disabled={pageIndex === 0}
+            <button type="button" className="small-button" disabled={pageIndex === 0}
               onClick={() => setPageIndex((index) => index - 1)}
             >
               Previous
             </button>
             <span>Page {pageIndex + 1} of {Math.ceil(history.total / PAGE_SIZE)}</span>
-            <button
-              type="button"
-              className="small-button"
-              disabled={start + count >= history.total}
+            <button type="button" className="small-button" disabled={start + count >= history.total}
               onClick={() => setPageIndex((index) => index + 1)}
             >
               Next

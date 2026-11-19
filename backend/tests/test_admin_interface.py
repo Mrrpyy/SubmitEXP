@@ -1,9 +1,7 @@
 from decimal import Decimal
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
-
 from app.api import admin
 from app.api.auth import UserInfo, get_current_user
 from app.main import app
@@ -13,13 +11,8 @@ from app.main import app
 STUDENT_USER = UserInfo(user_id=3, username='student_user', email='student@example.com', role='student')
 ADMIN_USER = UserInfo(user_id=1, username='admin_user', email='admin@example.com', role='admin')
 
-STATS_ROW = {
-    'total_users': 5,
-    'students': 4,
-    'admins': 1,
-    'total_submissions': 12,
-    'total_points_awarded': Decimal('640'),
-}
+STATS_ROW = { 'total_users': 5, 'students': 4, 'admins': 1, 'total_submissions': 12,
+    'total_points_awarded': Decimal('640'), }
 
 
 @pytest.fixture
@@ -56,18 +49,13 @@ def test_admin_sees_stats(client, monkeypatch):
     monkeypatch.setattr(admin, 'load_stats', lambda: STATS_ROW)
     response = client.get('/admin/stats')
     assert response.status_code == 200
-    assert response.json() == {
-        'total_users': 5,
-        'students': 4,
-        'admins': 1,
-        'total_submissions': 12,
-        'total_points_awarded': 640,
-    }
+    assert response.json() == { 'total_users': 5, 'students': 4, 'admins': 1, 'total_submissions': 12,
+        'total_points_awarded': 640, }
 
 
 def test_empty_app_stats_are_zero(client, monkeypatch):
     log_in_as(ADMIN_USER)
-    # no point rows means sum gives back null
+# no point rows means sum gives back null
     monkeypatch.setattr(admin, 'load_stats', lambda: {**STATS_ROW, 'total_submissions': 0, 'total_points_awarded': None})
     body = client.get('/admin/stats').json()
     assert body['total_submissions'] == 0

@@ -52,11 +52,8 @@ def database_down() -> HTTPException:
 #database
 #every account with its points newest first
 def load_all_users() -> list[dict]:
-    query = text(
-        'SELECT u.user_id, u.username, u.email, u.role, COALESCE(p.total_points, 0) AS total_points '
-        'FROM users u '
-        'LEFT JOIN user_progress p ON p.user_id = u.user_id '
-        'ORDER BY u.user_id DESC')
+    query = text('SELECT u.user_id, u.username, u.email, u.role, COALESCE(p.total_points, 0) AS total_points '
+        'FROM users u ' 'LEFT JOIN user_progress p ON p.user_id = u.user_id ' 'ORDER BY u.user_id DESC')
     with get_engine().connect() as connection:
         rows = connection.execute(query).mappings().all()
     return [dict(row) for row in rows]
@@ -67,20 +64,16 @@ def find_user_row(user_id: int) -> dict | None:
 
 def save_role(user_id: int, role: str) -> None:
     with get_engine().begin() as connection:
-        connection.execute(
-            text('UPDATE users SET role = :role WHERE user_id = :user_id'),
-            {'role': role, 'user_id': user_id},)
+        connection.execute(text('UPDATE users SET role = :role WHERE user_id = :user_id'),
+            {'role': role, 'user_id': user_id})
 
 #counts for the whole app in one query
 def load_stats() -> dict:
-    query = text(
-        'SELECT '
-        '  (SELECT COUNT(*) FROM users) AS total_users, '
+    query = text('SELECT ' '  (SELECT COUNT(*) FROM users) AS total_users, '
         "  (SELECT COUNT(*) FROM users WHERE role = 'student') AS students, "
         "  (SELECT COUNT(*) FROM users WHERE role = 'admin') AS admins, "
         '  (SELECT COUNT(*) FROM submissions) AS total_submissions, '
-        '  (SELECT COALESCE(SUM(points_awarded), 0) FROM point_transactions) AS total_points_awarded'
-    )
+        '  (SELECT COALESCE(SUM(points_awarded), 0) FROM point_transactions) AS total_points_awarded')
     with get_engine().connect() as connection:
         row = connection.execute(query).mappings().first()
     return dict(row) if row else {}
@@ -88,30 +81,21 @@ def load_stats() -> dict:
 #Page through one account's submissions. A missing EXP transaction stays null,rather than being reported as a zero-point award.
 def load_submission_history(user_id: int, limit: int, offset: int) -> tuple[int, list[dict]] | None:
     with get_engine().connect() as connection:
-        # TIMESTAMP (created_at) is returned in UTC; DATETIME values are stored as UTC.
+# TIMESTAMP (created_at) is returned in UTC; DATETIME values are stored as UTC.
         connection.execute(text("SET time_zone = '+00:00'"))
-        found = connection.execute(
-            text('SELECT 1 FROM users WHERE user_id = :user_id'),
-            {'user_id': user_id},).first()
+        found = connection.execute(text('SELECT 1 FROM users WHERE user_id = :user_id'),
+            {'user_id': user_id}).first()
         if found is None:
             return None
 
-        total = connection.execute(
-            text('SELECT COUNT(*) FROM submissions WHERE user_id = :user_id'),
-            {'user_id': user_id},
-        ).scalar_one()
-        rows = connection.execute(
-            text(
-                'SELECT s.submission_id, s.assignment_title, s.course_name, '
+        total = connection.execute(text('SELECT COUNT(*) FROM submissions WHERE user_id = :user_id'),
+            {'user_id': user_id}).scalar_one()
+        rows = connection.execute(text('SELECT s.submission_id, s.assignment_title, s.course_name, '
                 's.submission_type, s.due_at, s.submitted_at, s.created_at, '
-                's.canvas_course_id, s.canvas_assignment_id, t.points_awarded '
-                'FROM submissions s '
-                'LEFT JOIN point_transactions t ON t.submission_id = s.submission_id '
-                'WHERE s.user_id = :user_id '
-                'ORDER BY s.submitted_at DESC, s.submission_id DESC '
-                'LIMIT :limit OFFSET :offset'),
-            {'user_id': user_id, 'limit': limit, 'offset': offset},
-        ).mappings().all()
+                's.canvas_course_id, s.canvas_assignment_id, t.points_awarded ' 'FROM submissions s '
+                'LEFT JOIN point_transactions t ON t.submission_id = s.submission_id ' 'WHERE s.user_id = :user_id '
+                'ORDER BY s.submitted_at DESC, s.submission_id DESC ' 'LIMIT :limit OFFSET :offset'),
+            {'user_id': user_id, 'limit': limit, 'offset': offset}).mappings().all()
     return int(total), [dict(row) for row in rows]
 
 
@@ -130,16 +114,12 @@ def app_stats(admin: UserInfo = Depends(require_admin)) -> AdminStats:
         row = load_stats()
     except (DatabaseNotConfigured, SQLAlchemyError):
         raise database_down()
- #mysql sum comes back as a decimal, so force ints
+#mysql sum comes back as a decimal, so force ints
     return AdminStats(**{field: int(row.get(field) or 0) for field in AdminStats.model_fields})
 
 @router.get('/users/{user_id}/submissions', response_model=AdminSubmissionPage)
-def user_submissions(
-    user_id: int,
-    limit: int = Query(default=20, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
-    admin: UserInfo = Depends(require_admin),
-) -> AdminSubmissionPage:
+def user_submissions(user_id: int, limit: int = Query(default=20, ge=1, le=100), offset: int = Query(default=0, ge=0),
+    admin: UserInfo = Depends(require_admin)) -> AdminSubmissionPage:
     try:
         result = load_submission_history(user_id, limit, offset)
     except (DatabaseNotConfigured, SQLAlchemyError):
@@ -147,22 +127,17 @@ def user_submissions(
     if result is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')
     total, rows = result
-    return AdminSubmissionPage(
-        user_id=user_id,
-        total=total,
-        limit=limit,
-        offset=offset,
-        submissions=[AdminSubmissionRow(**row) for row in rows],
-    )
+    return AdminSubmissionPage(user_id=user_id, total=total, limit=limit, offset=offset,
+        submissions=[AdminSubmissionRow(**row) for row in rows])
 
 #post instead of patch because the server only allows get and post from the extension
 @router.post('/users/{user_id}/role', response_model=AdminUserRow)
 def change_role(user_id: int, body: RoleChangeRequest, admin: UserInfo = Depends(require_admin)) -> AdminUserRow:
-    # stops an admin from removing their own access by mistake
+# stops an admin from removing their own access by mistake
     if user_id == admin.user_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='You cannot change your own role')
     try:
-        # look first, mysql counts an update to the same role as zero rows changed
+# look first, mysql counts an update to the same role as zero rows changed
         target = find_user_row(user_id)
         if target is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='User not found')

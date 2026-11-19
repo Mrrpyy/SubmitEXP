@@ -1,6 +1,5 @@
 
 import { createWorker } from 'tesseract.js';
-
 export type OCRResult = {
   text: string;
   confidence?: number;
@@ -18,8 +17,7 @@ function getWorker() {
       corePath: `${base}/tesseract-core-simd-lstm.wasm.js`,
       langPath: base,
       workerBlobURL: false,
-      cacheMethod: 'none',
-    }).catch((error) => {
+      cacheMethod: 'none', }).catch((error) => {
       workerPromise = null;
       throw error;
     });
@@ -27,11 +25,8 @@ function getWorker() {
   return workerPromise;
 }
 // Enlarge screenshots to improve small text reading
-async function enhanceScreenshot(
-  image: Blob | string
-): Promise<string> {
-  const objectUrl =
-    image instanceof Blob
+async function enhanceScreenshot(image: Blob | string): Promise<string> {
+  const objectUrl = image instanceof Blob
       ? URL.createObjectURL(image)
       : null;
   const source = objectUrl ?? (image as string);
@@ -41,18 +36,11 @@ async function enhanceScreenshot(
 
     await new Promise<void>((resolve, reject) => {
       img.onload = () => resolve();
-      img.onerror = () =>
-        reject(new Error('Failed to load screenshot'));
+      img.onerror = () => reject(new Error('Failed to load screenshot'));
       img.src = source;
     });
 
-    const scale = Math.max(
-      1,
-      Math.min(
-        2,
-        3840 / Math.max(img.naturalWidth, img.naturalHeight)
-      )
-    );
+    const scale = Math.max(1, Math.min(2, 3840 / Math.max(img.naturalWidth, img.naturalHeight)));
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(img.naturalWidth * scale);
     canvas.height = Math.round(img.naturalHeight * scale);
@@ -67,13 +55,7 @@ async function enhanceScreenshot(
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
-    ctx.drawImage(
-      img,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL('image/png');
   } finally {
     if (objectUrl) {
@@ -83,9 +65,7 @@ async function enhanceScreenshot(
 }
 
 // Read screenshot locally without uploading it.
-export async function recognizeScreenshot(
-  image: Blob | string
-): Promise<OCRResult> {
+export async function recognizeScreenshot(image: Blob | string): Promise<OCRResult> {
   const enhancedImage = await enhanceScreenshot(image);
 
   const worker = await getWorker();
@@ -93,6 +73,5 @@ export async function recognizeScreenshot(
 
   return {
     text: data.text,
-    confidence: data.confidence,
-  };
+    confidence: data.confidence, };
 }

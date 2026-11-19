@@ -20,38 +20,26 @@ import { getStudentProgress } from './services/api';
 import type { StudentProgress } from './services/api';
 // Convert Canvas local dates to ISO 8601 timestamps, assumes Canvas displays dates in the computers timezone
 function canvasDateToISO(value: string): string {
-  const match = value.match(
-    /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
-  );
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/);
   if (!match) {
     throw new Error('Invalid Canvas date format');
   }
-  const [, yearText, monthText, dayText, hourText,
-    minuteText, secondText] = match;
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText] = match;
   const year = Number(yearText);
   const month = Number(monthText);
   const day = Number(dayText);
   const hour = Number(hourText);
   const minute = Number(minuteText);
   const second = Number(secondText);
-  const date = new Date(
-    year,
-    month - 1,
-    day,
-    hour,
-    minute,
-    second
-  );
+  const date = new Date(year, month - 1, day, hour, minute, second);
 // Prevent invalid dates from being normalized silently.
-  if (
-    Number.isNaN(date.getTime()) ||
+  if (Number.isNaN(date.getTime()) ||
     date.getFullYear() !== year ||
     date.getMonth() !== month - 1 ||
     date.getDate() !== day ||
     date.getHours() !== hour ||
     date.getMinutes() !== minute ||
-    date.getSeconds() !== second
-  ) {
+    date.getSeconds() !== second) {
     throw new Error('Invalid Canvas date');
   }
 
@@ -60,31 +48,23 @@ function canvasDateToISO(value: string): string {
 export default function App() {
 // Canvas submission checking
   const [checking, setChecking] = useState(false);
-  const [submission, setSubmission] =
-    useState<ParsedSubmission | null>(null);
-  const [checkError, setCheckError] =
-    useState<string | null>(null);
+  const [submission, setSubmission] = useState<ParsedSubmission | null>(null);
+  const [checkError, setCheckError] = useState<string | null>(null);
   const [rawOcrText, setRawOcrText] = useState<string | null>(null);
   const [dueYear, setDueYear] = useState('');
   const [submittedYear, setSubmittedYear] = useState('');
   const previewRequest = useRef(0);
 // Assignment EXP preview
-  const [previewPoints, setPreviewPoints] =
-    useState<number | null>(null);
-  const [previewError, setPreviewError] =
-    useState<string | null>(null);
+  const [previewPoints, setPreviewPoints] = useState<number | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 // Review the Canvas assignment identity and OCR dates
-  const [assignmentIds, setAssignmentIds] =
-    useState<CanvasAssignmentIds | null>(null);
-  const [detailsConfirmed, setDetailsConfirmed] =
-    useState(false);
+  const [assignmentIds, setAssignmentIds] = useState<CanvasAssignmentIds | null>(null);
+  const [detailsConfirmed, setDetailsConfirmed] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
 // EXP recording for local prototype tests; OCR is not independent proof of submission
   const [awarding, setAwarding] = useState(false);
-  const [awardResult, setAwardResult] =
-    useState<AssignmentAwardResponse | null>(null);
-  const [awardError, setAwardError] =
-    useState<string | null>(null);
+  const [awardResult, setAwardResult] = useState<AssignmentAwardResponse | null>(null);
+  const [awardError, setAwardError] = useState<string | null>(null);
 // Extension status
   const [onCanvas, setOnCanvas] = useState(false);
   const [backgroundOk, setBackgroundOk] = useState(false);
@@ -92,13 +72,9 @@ export default function App() {
 // Logged in user
   const [user, setUser] = useState<User | null>(null);
   const authGuard = useRef(new AuthRequestGuard());
-  const sessionWriteQueue = useRef<Promise<void>>(
-    Promise.resolve()
-  );
+  const sessionWriteQueue = useRef<Promise<void>>(Promise.resolve());
 
-  function queueSessionWrite(
-    action: () => Promise<void>
-  ): Promise<void> {
+  function queueSessionWrite(action: () => Promise<void>): Promise<void> {
     const operation = sessionWriteQueue.current
       .catch(() => undefined)
       .then(action);
@@ -115,8 +91,7 @@ export default function App() {
       setOnCanvas(isCanvasUrl(url));
       setBackgroundOk(await pingBackground());
 
-      const count =
-        ((await loadValue<number>('timesOpened')) ?? 0) + 1;
+      const count = ((await loadValue<number>('timesOpened')) ?? 0) + 1;
 
       await saveValue('timesOpened', count);
       setTimesOpened(count);
@@ -126,11 +101,9 @@ export default function App() {
       console.error('Popup setup failed:', error);
     });
   }, []);
-  const [progress, setProgress] =
-  useState<StudentProgress | null>(null);
+  const [progress, setProgress] = useState<StudentProgress | null>(null);
 
-  const [progressError, setProgressError] =
-    useState<string | null>(null);
+  const [progressError, setProgressError] = useState<string | null>(null);
 
 // only students earn EXP, admins can look but not record
   const isStudent = user?.role === 'student';
@@ -153,9 +126,7 @@ export default function App() {
           return;
         }
 
-        const result = await getStudentProgress(
-          session.token
-        );
+        const result = await getStudentProgress(session.token);
 
         if (!cancelled) {
           setProgress(result);
@@ -163,11 +134,9 @@ export default function App() {
         }
       } catch (error) {
         if (!cancelled) {
-          setProgressError(
-            error instanceof Error
+          setProgressError(error instanceof Error
               ? error.message
-              : 'Unable to load progress'
-          );
+              : 'Unable to load progress');
         }
       }
     }
@@ -195,9 +164,7 @@ export default function App() {
 // Display saved user immediately
       setUser(session.user);
       try {
-        const currentUser = await getCurrentUser(
-          session.token
-        );
+        const currentUser = await getCurrentUser(session.token);
 
         if (!authGuard.current.isCurrent(requestId)) {
           return;
@@ -209,10 +176,8 @@ export default function App() {
           return;
         }
 // Only clear session when token is invalid
-        if (
-          error instanceof ApiError &&
-          error.status === 401
-        ) {
+        if (error instanceof ApiError &&
+          error.status === 401) {
           await queueSessionWrite(clearSession);
 
           if (authGuard.current.isCurrent(requestId)) {
@@ -231,22 +196,17 @@ export default function App() {
     };
   }, []);
 // Handle successful login
-  async function handleLoggedIn(
-    token: string,
-    loggedInUser: User
-  ) {
+  async function handleLoggedIn(token: string, loggedInUser: User) {
     const requestId = authGuard.current.begin();
 
-    await queueSessionWrite(() =>
-      saveSession({ token, user: loggedInUser })
-    );
+    await queueSessionWrite(() => saveSession({ token, user: loggedInUser }));
 
     if (!authGuard.current.isCurrent(requestId)) {
       return;
     }
 
     setUser(loggedInUser);
-    // Never carry a previous user's OCR result into another login.
+// Never carry a previous user's OCR result into another login.
     previewRequest.current += 1;
     setReviewOpen(false);
     setSubmission(null);
@@ -292,44 +252,33 @@ async function loadExpPreview(parsed: ParsedSubmission) {
   setReviewOpen(false);
   setDetailsConfirmed(false);
 
-  if (
-    parsed.type !== 'assignment' ||
+  if (parsed.type !== 'assignment' ||
     !parsed.dueAt ||
-    !parsed.submittedAt
-  ) return;
+    !parsed.submittedAt) return;
 
   try {
     const due = canvasDateToISO(parsed.dueAt);
     const submitted = canvasDateToISO(parsed.submittedAt);
 
-    const difference = Math.abs(
-      new Date(due).getTime() -
-      new Date(submitted).getTime()
-    );
+    const difference = Math.abs(new Date(due).getTime() -
+      new Date(submitted).getTime());
 
     const MAX_DIFFERENCE = 180 * 24 * 60 * 60 * 1000;
 
     if (difference > MAX_DIFFERENCE) {
-      throw new Error(
-        'Dates are unusually far apart. Please verify the OCR results.'
-      );
+      throw new Error('Dates are unusually far apart. Please verify the OCR results.');
     }
 
-    const preview = await previewAssignmentPoints(
-      due,
-      submitted
-    );
+    const preview = await previewAssignmentPoints(due, submitted);
 
     if (request === previewRequest.current) {
       setPreviewPoints(preview.points);
     }
   } catch (error) {
     if (request === previewRequest.current) {
-      setPreviewError(
-        error instanceof Error
+      setPreviewError(error instanceof Error
           ? error.message
-          : 'Unable to calculate EXP'
-      );
+          : 'Unable to calculate EXP');
     }
   }
 }
@@ -341,37 +290,27 @@ function invalidateYearSelection() {
   setDetailsConfirmed(false);
 }
 async function handleApplyYears() {
-  if (
-    !rawOcrText ||
+  if (!rawOcrText ||
     !submission ||
     checking ||
     awarding ||
-    awardResult
-  ) return;
+    awardResult) return;
   invalidateYearSelection();
-  const validYear = (value: string) =>
-    /^\d{4}$/.test(value) &&
+  const validYear = (value: string) => /^\d{4}$/.test(value) &&
     Number(value) >= 1000;
-  if (
-    (submission.missingYears.includes('dueAt') &&
+  if ((submission.missingYears.includes('dueAt') &&
       !validYear(dueYear)) ||
     (submission.missingYears.includes('submittedAt') &&
-      !validYear(submittedYear))
-  ) {
-    setPreviewError(
-      'Enter a valid four-digit year for each missing date.'
-    );
+      !validYear(submittedYear))) {
+    setPreviewError('Enter a valid four-digit year for each missing date.');
     return;
   }
   const parsed = parseSubmission(rawOcrText, {
     due: dueYear ? Number(dueYear) : undefined,
-    submitted: submittedYear ? Number(submittedYear) : undefined,
-  });
+    submitted: submittedYear ? Number(submittedYear) : undefined, });
   setSubmission(parsed);
   if (!parsed.dueAt || !parsed.submittedAt) {
-    setPreviewError(
-      'Could not read the dates. Check the Canvas page and try again.'
-    );
+    setPreviewError('Could not read the dates. Check the Canvas page and try again.');
     return;
   }
   await loadExpPreview(parsed);
@@ -400,9 +339,7 @@ async function handleApplyYears() {
       const ids = getCanvasAssignmentIds(url);
 
       if (!ids) {
-        throw new Error(
-          'Open an individual Canvas assignment page first.'
-        );
+        throw new Error('Open an individual Canvas assignment page first.');
       }
       setAssignmentIds(ids);
 // Capture the active Canvas page
@@ -416,11 +353,9 @@ async function handleApplyYears() {
     setSubmission(parsed);
     await loadExpPreview(parsed);
     } catch (error) {
-      setCheckError(
-        error instanceof Error
+      setCheckError(error instanceof Error
           ? error.message
-          : 'Failed to check submission.'
-      );
+          : 'Failed to check submission.');
     } finally {
       setChecking(false);
     }
@@ -428,13 +363,11 @@ async function handleApplyYears() {
 
 // Open the final review step without writing any EXP.
   function handleReviewSubmission() {
-    if (
-      checking || awarding || !user || !isStudent ||
+    if (checking || awarding || !user || !isStudent ||
       !assignmentIds || !submission ||
       submission.type !== 'assignment' || !submission.title?.trim() ||
       !submission.dueAt || !submission.submittedAt ||
-      previewPoints === null || previewError !== null || awardResult !== null
-    ) return;
+      previewPoints === null || previewError !== null || awardResult !== null) return;
 
     setDetailsConfirmed(false);
     setAwardError(null);
@@ -443,13 +376,11 @@ async function handleApplyYears() {
 
 // Record confirmed OCR-derived submission as EXP for local prototype testing
   async function handleAwardAssignment() {
-    if (
-      awarding || checking || !reviewOpen || !user || !isStudent || !detailsConfirmed || !assignmentIds ||
+    if (awarding || checking || !reviewOpen || !user || !isStudent || !detailsConfirmed || !assignmentIds ||
       !submission || submission.type !== 'assignment' ||
       !submission.title?.trim() || !submission.dueAt ||
       !submission.submittedAt || previewPoints === null ||
-      previewError !== null || awardResult !== null
-    ) {
+      previewError !== null || awardResult !== null) {
       return;
     }
 
@@ -459,14 +390,10 @@ async function handleApplyYears() {
     try {
 // Confirm the active URL still identifies the checked assignment
       const currentIds = getCanvasAssignmentIds(await getActiveTabUrl());
-      if (
-        !currentIds ||
+      if (!currentIds ||
         currentIds.canvas_course_id !== assignmentIds.canvas_course_id ||
-        currentIds.canvas_assignment_id !== assignmentIds.canvas_assignment_id
-      ) {
-        throw new Error(
-          'The active Canvas assignment changed. Check Submission again.'
-        );
+        currentIds.canvas_assignment_id !== assignmentIds.canvas_assignment_id) {
+        throw new Error('The active Canvas assignment changed. Check Submission again.');
       }
 
 // Use the existing stored login token
@@ -481,21 +408,16 @@ async function handleApplyYears() {
         canvas_assignment_id: assignmentIds.canvas_assignment_id,
         assignment_title: submission.title.trim(),
         due_at: canvasDateToISO(submission.dueAt),
-        submitted_at: canvasDateToISO(submission.submittedAt),
-      });
+        submitted_at: canvasDateToISO(submission.submittedAt), });
 
       setAwardResult(response);
       try {
-        const updatedProgress = await getStudentProgress(
-          session.token
-        );
+        const updatedProgress = await getStudentProgress(session.token);
 
         setProgress(updatedProgress);
         setProgressError(null);
       } catch {
-        setProgressError(
-          'EXP was recorded, but progress could not refresh.'
-        );
+        setProgressError('EXP was recorded, but progress could not refresh.');
       }
 
     } catch (error) {
@@ -504,25 +426,20 @@ async function handleApplyYears() {
       } else if (error instanceof ApiError && error.status === 401) {
         setAwardError('Your login has expired. Please sign in again.');
       } else {
-        setAwardError(
-          error instanceof Error ? error.message : 'Could not record EXP.'
-        );
+        setAwardError(error instanceof Error ? error.message : 'Could not record EXP.');
       }
     } finally {
       setAwarding(false);
     }
   }
 
-  // Separate confirmation/success screen, rather than an inline form.
+// Separate confirmation/success screen, rather than an inline form.
   if (reviewOpen && user && isStudent && submission && assignmentIds && previewPoints !== null) {
     return (
       <main className="shell">
         <div className="tag">SUBMITEXP</div>
         <h1>Submit<span>EXP</span></h1>
-        <SubmissionConfirmation
-          submission={submission}
-          assignmentIds={assignmentIds}
-          previewPoints={previewPoints}
+        <SubmissionConfirmation submission={submission} assignmentIds={assignmentIds} previewPoints={previewPoints}
           confirmed={detailsConfirmed}
           recording={awarding}
           result={awardResult}
@@ -556,11 +473,7 @@ async function handleApplyYears() {
 
 {/* ---------- profile dashboard ---------- */}
       {user ? (
-        <ProfileDashboard
-          user={user}
-          onLogout={handleLogout}
-          refreshKey={awardResult?.submission_id ?? 0}
-        />
+        <ProfileDashboard user={user} onLogout={handleLogout} refreshKey={awardResult?.submission_id ?? 0} />
       ) : (
         <LoginForm onLoggedIn={handleLoggedIn} />
       )}
@@ -580,17 +493,11 @@ async function handleApplyYears() {
           </span>
         </div>
 
-        <div
-          className="exp-track"
-          role="progressbar"
-          aria-label="Level progress"
-          aria-valuemin={0}
+        <div className="exp-track" role="progressbar" aria-label="Level progress" aria-valuemin={0}
           aria-valuemax={progress.exp_for_next_level}
           aria-valuenow={progress.exp_in_level}
         >
-          <div
-            className="exp-fill"
-            style={{
+          <div className="exp-fill" style={{
               width: `${progress.progress_percent}%`,
             }}
           />
@@ -626,10 +533,7 @@ async function handleApplyYears() {
       {user?.role === 'admin' && <AdminPanel currentUser={user} />}
 
 {/* Extension status */}
-      <section
-        className="panel"
-        style={{ marginTop: 12 }}
-      >
+      <section className="panel" style={{ marginTop: 12 }} >
         <h2>Status</h2>
 
         <ul className="status">
@@ -654,9 +558,7 @@ async function handleApplyYears() {
         </ul>
 
 {/* Check Submission */}
-        <button
-          type="button"
-          disabled={!onCanvas || !user || !isStudent || checking || awarding}
+        <button type="button" disabled={!onCanvas || !user || !isStudent || checking || awarding}
           onClick={handleCheckSubmission}
         >
           {checking ? 'Checking...' : 'Check Submission'}
@@ -719,11 +621,7 @@ async function handleApplyYears() {
                   {submission.missingYears.includes('dueAt') && (
                     <label>
                       Due year
-                      <input
-                        type="number"
-                        min={1000}
-                        max={9999}
-                        value={dueYear}
+                      <input type="number" min={1000} max={9999} value={dueYear}
                         disabled={awarding || awardResult !== null}
                         onChange={(event) => {
                           setDueYear(event.target.value);
@@ -737,11 +635,7 @@ async function handleApplyYears() {
                   {submission.missingYears.includes('submittedAt') && (
                     <label>
                       Submitted year
-                      <input
-                        type="number"
-                        min={1000}
-                        max={9999}
-                        value={submittedYear}
+                      <input type="number" min={1000} max={9999} value={submittedYear}
                         disabled={awarding || awardResult !== null}
                         onChange={(event) => {
                           setSubmittedYear(event.target.value);
@@ -752,9 +646,7 @@ async function handleApplyYears() {
                     </label>
                   )}
             
-                  <button
-                    type="button"
-                    disabled={checking || awarding || awardResult !== null}
+                  <button type="button" disabled={checking || awarding || awardResult !== null}
                     onClick={() => void handleApplyYears()}
                   >
                     Apply years and calculate EXP
@@ -770,8 +662,7 @@ async function handleApplyYears() {
             )}
 
             <small>
-              Dates are extracted from Canvas using OCR.
-              {awardResult
+              Dates are extracted from Canvas using OCR.{awardResult
                 ? ' EXP has been recorded in the test database.'
                 : ' No EXP has been awarded.'}
             </small>
@@ -802,13 +693,10 @@ async function handleApplyYears() {
           <div className="review-ready" style={{ marginTop: 12 }}>
             <h3>Ready to review</h3>
             <p>No EXP has been recorded yet. Review the detected information before confirming.</p>
-            <button
-              type="button"
-              disabled={
+            <button type="button" disabled={
                 checking || awarding || !submission?.title?.trim() ||
                 submission?.type !== 'assignment' || !submission?.dueAt ||
-                !submission?.submittedAt || previewError !== null
-              }
+                !submission?.submittedAt || previewError !== null }
               onClick={handleReviewSubmission}
             >
               Review submission
@@ -816,7 +704,7 @@ async function handleApplyYears() {
           </div>
         )}
 
-        {/* EXP preview errors */}
+{/* EXP preview errors */}
         {previewError && (
           <p className="form-error">
             {previewError}

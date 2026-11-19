@@ -5,7 +5,7 @@ import { loadSession } from '../services/session';
 
 interface LeaderboardProps {
   user: User;
-  // Changes after recording EXP, so the leaderboard refreshes automatically.
+// Changes after recording EXP, so the leaderboard refreshes automatically.
   refreshKey: number;
 }
 
@@ -46,12 +46,7 @@ export default function Leaderboard({ user, refreshKey }: LeaderboardProps) {
     <section className="panel leaderboard-panel">
       <div className="leaderboard-heading">
         <h2>Leaderboard</h2>
-        <button
-          type="button"
-          className="link"
-          disabled={loading}
-          onClick={() => setReloadKey((value) => value + 1)}
-        >
+        <button type="button" className="link" disabled={loading} onClick={() => setReloadKey((value) => value + 1)} >
           {loading ? 'Loading...' : 'Refresh'}
         </button>
       </div>

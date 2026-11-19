@@ -23,18 +23,13 @@ class StudentProgress(BaseModel):
 
 # reads the progress row and counts the submissions for one student
 def load_progress(user_id: int) -> dict:
-    query = text(
-        'SELECT '
-        '  COALESCE(p.total_points, 0) AS total_points, '
+    query = text('SELECT ' '  COALESCE(p.total_points, 0) AS total_points, '
         '  COALESCE(p.current_level, 1) AS current_level, '
-        '  (SELECT COUNT(*) FROM submissions s WHERE s.user_id = :user_id) AS submissions_recorded '
-        'FROM users u '
-        'LEFT JOIN user_progress p ON p.user_id = u.user_id '
-        'WHERE u.user_id = :user_id'
-    )
+        '  (SELECT COUNT(*) FROM submissions s WHERE s.user_id = :user_id) AS submissions_recorded ' 'FROM users u '
+        'LEFT JOIN user_progress p ON p.user_id = u.user_id ' 'WHERE u.user_id = :user_id')
     with get_engine().connect() as connection:
         row = connection.execute(query, {'user_id': user_id}).mappings().first()
-    # a missing row means no progress yet, so start from zero
+# a missing row means no progress yet, so start from zero
     if row is None:
         return {'total_points': 0, 'current_level': 1, 'submissions_recorded': 0}
     return dict(row)
@@ -49,9 +44,5 @@ def my_progress(user: UserInfo = Depends(require_student)) -> StudentProgress:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Database is not available')
     total_points = int(row["total_points"])
     level_data = calculate_progress(total_points)
-    return StudentProgress(
-        username=user.username,
-        total_points=total_points,
-        submissions_recorded=int(row["submissions_recorded"]),
-        **level_data,
-    )
+    return StudentProgress(username=user.username, total_points=total_points,
+        submissions_recorded=int(row["submissions_recorded"]), **level_data)

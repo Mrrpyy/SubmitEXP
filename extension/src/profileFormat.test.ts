@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  earlyRate,
-  formatLastSubmitted,
-  formatMemberSince,
-  initialFor,
-  parseServerDate,
+import { earlyRate, formatLastSubmitted, formatMemberSince, initialFor, parseServerDate,
 } from './services/profileFormat';
 
 // ---------- server dates ----------

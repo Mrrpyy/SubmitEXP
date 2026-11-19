@@ -19,7 +19,7 @@ class RegisterRequest(BaseModel):
     @field_validator('password')
     @classmethod
     def password_not_too_long(cls, value: str) -> str:
-        # bcrypt only reads the first 72 bytes, anything longer would get cut off without warning
+# bcrypt only reads the first 72 bytes, anything longer would get cut off without warning
         if len(value.encode('utf-8')) > 72:
             raise ValueError('Password must be 72 bytes or fewer')
         return value
@@ -41,9 +41,7 @@ class RegisterResponse(BaseModel):
 
 #returns username or email if one is already taken, otherwise None
 def find_taken_field(username: str, email: str) -> str | None:
-    query = text(
-        'SELECT username, email FROM users WHERE username = :username OR email = :email LIMIT 1'
-    )
+    query = text('SELECT username, email FROM users WHERE username = :username OR email = :email LIMIT 1')
     with get_engine().connect() as connection:
         row = connection.execute(query, {'username': username, 'email': email}).mappings().first()
     if row is None:
@@ -54,20 +52,13 @@ def find_taken_field(username: str, email: str) -> str | None:
 
 # saves the user and their starting progress row together
 def insert_user(username: str, email: str, password_hash: str) -> int:
-    # begin means both inserts succeed or both get undone, no half made accounts
+# begin means both inserts succeed or both get undone, no half made accounts
     with get_engine().begin() as connection:
-        result = connection.execute(
-            text(
-                "INSERT INTO users (username, email, password_hash, role) "
-                "VALUES (:username, :email, :password_hash, 'student')"
-            ),
-            {'username': username, 'email': email, 'password_hash': password_hash},
-        )
+        result = connection.execute(text("INSERT INTO users (username, email, password_hash, role) "
+                "VALUES (:username, :email, :password_hash, 'student')"),
+            {'username': username, 'email': email, 'password_hash': password_hash})
         user_id = int(result.lastrowid)
-        connection.execute(
-            text('INSERT INTO user_progress (user_id) VALUES (:user_id)'),
-            {'user_id': user_id},
-        )
+        connection.execute(text('INSERT INTO user_progress (user_id) VALUES (:user_id)'), {'user_id': user_id})
     return user_id
 
 
@@ -108,14 +99,10 @@ class LoginResponse(BaseModel):
     
 # finds the account by username or email it is none if there is no account tha exists
 def find_user_for_login(identifier: str) -> dict | None:
-    query = text(
-        'SELECT user_id, username, email, password_hash, role FROM users '
-        'WHERE username = :identifier OR email = :email LIMIT 1'
-    )
+    query = text('SELECT user_id, username, email, password_hash, role FROM users '
+        'WHERE username = :identifier OR email = :email LIMIT 1')
     with get_engine().connect() as connection:
-        row = connection.execute(
-            query, {'identifier': identifier, 'email': identifier.lower()}
-        ).mappings().first()
+        row = connection.execute(query, {'identifier': identifier, 'email': identifier.lower()}).mappings().first()
     return dict(row) if row else None
 
 # finds the account a token belongs to it is none if it was deleted
@@ -140,7 +127,7 @@ def login(body: LoginRequest) -> LoginResponse:
         user = find_user_for_login(body.identifier.strip())
     except (DatabaseNotConfigured, SQLAlchemyError):
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Database is not available')
-    # same message for a wrong password and an unknown account so nobody can use login to find out who has an account
+# same message for a wrong password and an unknown account so nobody can use login to find out who has an account
     if user is None or not password_matches(body.password, user['password_hash']):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Incorrect username or password')
     try:
@@ -153,8 +140,7 @@ bearer = HTTPBearer(auto_error=False)
 
 def not_logged_in(detail: str) -> HTTPException:
     return HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail=detail, headers={'WWW-Authenticate': 'Bearer'}
-    )
+        status_code=status.HTTP_401_UNAUTHORIZED, detail=detail, headers={'WWW-Authenticate': 'Bearer'})
     
 # any endpoint that needs a logged in user adds this: user: UserInfo = Depends(get_current_user)
 def get_current_user(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)) -> UserInfo:

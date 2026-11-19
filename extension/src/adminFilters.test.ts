@@ -2,15 +2,14 @@ import { describe, expect, it } from 'vitest';
 import type { AdminUserRow } from './services/api';
 import { canChangeRole, filterUsers, otherRole, replaceUser } from './services/adminFilters';
 
-// ---------- setup ----------
+// setup
 
 const ROWS: AdminUserRow[] = [
   { user_id: 1, username: 'admin_user', email: 'admin@example.com', role: 'admin', total_points: 0 },
   { user_id: 2, username: 'Miguel_G', email: 'miguel@ufl.edu', role: 'student', total_points: 120 },
-  { user_id: 3, username: 'brian_t', email: 'brian@ufl.edu', role: 'student', total_points: 75 },
-];
+  { user_id: 3, username: 'brian_t', email: 'brian@ufl.edu', role: 'student', total_points: 75 },];
 
-// ---------- filtering ----------
+//filtering
 
 describe('filterUsers', () => {
   it('returns everyone with no search and all roles', () => {
@@ -44,7 +43,7 @@ describe('filterUsers', () => {
   });
 });
 
-// ---------- updating a row ----------
+//updating a row
 
 describe('replaceUser', () => {
   it('swaps only the matching row', () => {
@@ -61,7 +60,7 @@ describe('replaceUser', () => {
   });
 });
 
-// ---------- role buttons ----------
+//role buttons
 
 describe('otherRole', () => {
   it('flips between student and admin', () => {

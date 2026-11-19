@@ -19,13 +19,13 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
-  // the row waiting on a confirm click
+// the row waiting on a confirm click
   const [pendingId, setPendingId] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [historyUser, setHistoryUser] = useState<AdminUserRow | null>(null);
 
-  // ---------- loading ----------
+// ---------- loading ----------
 
   async function getToken(): Promise<string> {
     const session = await loadSession();
@@ -57,7 +57,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
     void loadAll();
   }, [currentUser.user_id]);
 
-  // ---------- role changes ----------
+// ---------- role changes ----------
 
   async function confirmRoleChange(row: AdminUserRow) {
     const newRole = otherRole(row.role);
@@ -74,9 +74,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       try {
         setStats(await getAdminStats(token));
       } catch {
-        setError(
-          'Role updated, but statistics could not refresh. Click Refresh to retry.'
-        );
+        setError('Role updated, but statistics could not refresh. Click Refresh to retry.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not change role');
@@ -88,7 +86,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
 
   const shown = filterUsers(users, search, roleFilter);
 
-  // ---------- app totals ----------
+// ---------- app totals ----------
 
   return (
     <section className="panel admin-panel">
@@ -124,18 +122,12 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
         </div>
       )}
 
-      {/* ---------- search and filter ---------- */}
+{/* ---------- search and filter ---------- */}
       <div className="admin-filters">
-        <input
-          type="search"
-          placeholder="Search name or email"
-          aria-label="Search users"
-          value={search}
+        <input type="search" placeholder="Search name or email" aria-label="Search users" value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
-        <select
-          aria-label="Filter by role"
-          value={roleFilter}
+        <select aria-label="Filter by role" value={roleFilter}
           onChange={(event) => setRoleFilter(event.target.value as RoleFilter)}
         >
           <option value="all">All</option>
@@ -147,7 +139,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       {error && <p className="form-error">{error}</p>}
       {notice && <p className="form-success">{notice}</p>}
 
-      {/* ---------- user list ---------- */}
+{/* ---------- user list ---------- */}
       <ul className="admin-list">
         {shown.map((row) => (
           <li key={row.user_id} className="admin-row">
@@ -163,47 +155,33 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
             </div>
 
             <div className="admin-actions">
-              <button
-                type="button"
-                className="small-button"
-                onClick={() => {
+              <button type="button" className="small-button" onClick={() => {
                   setHistoryUser((previous) => previous?.user_id === row.user_id ? null : row);
                 }}
                 aria-expanded={historyUser?.user_id === row.user_id}
               >
                 {historyUser?.user_id === row.user_id ? 'Hide history' : 'History'}
               </button>
-              {canChangeRole(row, currentUser.user_id) && (
-                pendingId === row.user_id ? (
+              {canChangeRole(row, currentUser.user_id) && (pendingId === row.user_id ? (
                   <>
-                    <button
-                      type="button"
-                      className="small-button confirm"
-                      disabled={savingId !== null}
+                    <button type="button" className="small-button confirm" disabled={savingId !== null}
                       onClick={() => void confirmRoleChange(row)}
                     >
                       {savingId === row.user_id ? 'Saving...' : 'Confirm'}
                     </button>
-                    <button
-                      type="button"
-                      className="small-button"
-                      disabled={savingId !== null}
+                    <button type="button" className="small-button" disabled={savingId !== null}
                       onClick={() => setPendingId(null)}
                     >
                       Cancel
                     </button>
                   </>
                 ) : (
-                  <button
-                    type="button"
-                    className="small-button"
-                    disabled={savingId !== null}
+                  <button type="button" className="small-button" disabled={savingId !== null}
                     onClick={() => setPendingId(row.user_id)}
                   >
                     Make {otherRole(row.role)}
                   </button>
-                )
-              )}
+                ))}
             </div>
           </li>
         ))}

@@ -1,9 +1,7 @@
 from datetime import datetime
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
-
 from app.api import admin
 from app.api.auth import UserInfo, get_current_user
 from app.main import app
@@ -11,18 +9,10 @@ from app.main import app
 ADMIN = UserInfo(user_id=1, username='boss', email='boss@example.com', role='admin')
 STUDENT = UserInfo(user_id=3, username='student', email='student@example.com', role='student')
 
-SUBMISSION = {
-    'submission_id': 42,
-    'assignment_title': 'Chapter 3 homework',
-    'course_name': 'Mathematics',
-    'submission_type': 'assignment',
-    'due_at': datetime(2026, 11, 16, 23, 59),
-    'submitted_at': datetime(2026, 11, 15, 20, 0),
-    'created_at': datetime(2026, 11, 15, 20, 2),
-    'canvas_course_id': 1000,
-    'canvas_assignment_id': 2000,
-    'points_awarded': 75,
-}
+SUBMISSION = { 'submission_id': 42, 'assignment_title': 'Chapter 3 homework', 'course_name': 'Mathematics',
+    'submission_type': 'assignment', 'due_at': datetime(2026, 11, 16, 23, 59),
+    'submitted_at': datetime(2026, 11, 15, 20, 0), 'created_at': datetime(2026, 11, 15, 20, 2),
+    'canvas_course_id': 1000, 'canvas_assignment_id': 2000, 'points_awarded': 75, }
 
 
 @pytest.fixture
@@ -124,7 +114,7 @@ def test_database_error_returns_503(client, monkeypatch):
 
 
 def test_sql_uses_bound_user_id_and_pagination(monkeypatch):
-    # Inspect real query usage with a minimal fake engine (no MySQL instance required).
+# Inspect real query usage with a minimal fake engine (no MySQL instance required).
     executed = []
 
     class Result:

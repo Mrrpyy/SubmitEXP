@@ -5,8 +5,7 @@ export default function RegistrationForm() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] =
-    useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,9 +21,7 @@ export default function RegistrationForm() {
     const cleanEmail = email.trim().toLowerCase();
 
     if (!/^[A-Za-z0-9_]{3,50}$/.test(cleanUsername)) {
-      setError(
-        'Username must be 3-50 characters, using only letters, numbers, or underscores.'
-      );
+      setError('Username must be 3-50 characters, using only letters, numbers, or underscores.');
       return;
     }
 
@@ -49,8 +46,7 @@ export default function RegistrationForm() {
       const result = await registerUser({
         username: cleanUsername,
         email: cleanEmail,
-        password,
-      });
+        password, });
 
       setSuccess(
         `Account created for ${result.username}! You can log in now.`
@@ -61,11 +57,9 @@ export default function RegistrationForm() {
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setError(
-        err instanceof Error
+      setError(err instanceof Error
           ? err.message
-          : 'Registration failed. Please try again.'
-      );
+          : 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -81,11 +75,7 @@ export default function RegistrationForm() {
         <label htmlFor="register-username">
           Username
         </label>
-        <input
-          id="register-username"
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+        <input id="register-username" type="text" value={username} onChange={(e) => setUsername(e.target.value)}
           minLength={3}
           maxLength={50}
           pattern="[A-Za-z0-9_]+"
@@ -96,23 +86,13 @@ export default function RegistrationForm() {
         <label htmlFor="register-email">
           Email
         </label>
-        <input
-          id="register-email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-        />
+        <input id="register-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email" required />
 
         <label htmlFor="register-password">
           Password
         </label>
-        <input
-          id="register-password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+        <input id="register-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
           minLength={8}
           autoComplete="new-password"
           required
@@ -121,13 +101,8 @@ export default function RegistrationForm() {
         <label htmlFor="register-confirm">
           Confirm Password
         </label>
-        <input
-          id="register-confirm"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) =>
-            setConfirmPassword(e.target.value)
-          }
+        <input id="register-confirm" type="password" value={confirmPassword} onChange={(e) =>
+            setConfirmPassword(e.target.value) }
           autoComplete="new-password"
           required
         />

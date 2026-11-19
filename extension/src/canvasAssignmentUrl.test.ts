@@ -9,23 +9,18 @@ describe('Canvas assignment URL parsing', () => {
 
     expect(result).toEqual({
       canvas_course_id: 12345,
-      canvas_assignment_id: 67890,
-    });
+      canvas_assignment_id: 67890, });
   });
 
   it('rejects non-Canvas URLs', () => {
-    expect(
-      getCanvasAssignmentIds(
+    expect(getCanvasAssignmentIds(
         'https://example.com/courses/123/assignments/456'
-      )
-    ).toBeNull();
+      )).toBeNull();
   });
 
   it('rejects non-assignment pages', () => {
-    expect(
-      getCanvasAssignmentIds(
+    expect(getCanvasAssignmentIds(
         'https://ufl.instructure.com/courses/12345'
-      )
-    ).toBeNull();
+      )).toBeNull();
   });
 });

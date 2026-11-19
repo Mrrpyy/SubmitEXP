@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta, timezone
-
 import jwt
-
 from app.core import config
 
 #how long the login lasts

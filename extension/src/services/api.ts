@@ -1,13 +1,14 @@
 // The local FastAPI server. This URL is already covered by manifest.json.
 export type SubmissionType = 'assignment' | 'quiz' | 'test' | 'exam';
 export const API_BASE_URL = 'http://127.0.0.1:8000';
-
 export interface SubmissionMetadata {
   assignment_title: string;
   course_name?: string | null;
   submission_type: SubmissionType;
-  due_at?: string | null;        // ISO 8601 date/time
-  submitted_at?: string | null;  // ISO 8601 date/time
+// ISO 8601 date/time
+  due_at?: string | null;
+// ISO 8601 date/time
+  submitted_at?: string | null;
 }
 
 export interface ValidationResponse {
@@ -53,8 +54,7 @@ async function apiRequest<T>(path: string, body?: unknown, token?: string): Prom
   try {
     const options: RequestInit = {
       method: body === undefined ? 'GET' : 'POST',
-      signal: controller.signal,
-    };
+      signal: controller.signal, };
 
     const headers: Record<string, string> = {};
 
@@ -63,7 +63,7 @@ async function apiRequest<T>(path: string, body?: unknown, token?: string): Prom
       options.body = JSON.stringify(body);
     }
 
-     // Logged in requests carry the login token from /auth/login.
+// Logged in requests carry the login token from /auth/login.
     if (token) headers.Authorization = `Bearer ${token}`;
     options.headers = headers;
 
@@ -102,9 +102,7 @@ export async function checkBackendHealth(): Promise<boolean> {
 }
 
 // Sends only parsed metadata. Never pass raw screenshots or credentials.
-export function validateSubmissionMetadata(
-  metadata: SubmissionMetadata,
-): Promise<ValidationResponse> {
+export function validateSubmissionMetadata(metadata: SubmissionMetadata,): Promise<ValidationResponse> {
   return apiRequest<ValidationResponse>('/integration/validate', metadata);
 }
 
@@ -122,13 +120,8 @@ export interface RegisterResponse {
   role: string;
 }
 
-export function registerUser(
-  user: RegisterRequest
-): Promise<RegisterResponse> {
-  return apiRequest<RegisterResponse>(
-    '/auth/register',
-    user
-  );
+export function registerUser(user: RegisterRequest): Promise<RegisterResponse> {
+  return apiRequest<RegisterResponse>('/auth/register', user);
 }
 
 // identifier is the username or the email
@@ -146,16 +139,10 @@ export interface AssignmentPointsResponse {
   points: number;
   message: string;
 }
-export function previewAssignmentPoints(
-  dueAt: string,
-  submittedAt: string
-): Promise<AssignmentPointsResponse> {
-  return apiRequest<AssignmentPointsResponse>(
-    '/integration/assignment-points-preview',
-    {
+export function previewAssignmentPoints(dueAt: string, submittedAt: string): Promise<AssignmentPointsResponse> {
+  return apiRequest<AssignmentPointsResponse>('/integration/assignment-points-preview', {
       due_at: dueAt,
-      submitted_at: submittedAt,
-    }
+      submitted_at: submittedAt, }
   );
 }
 
@@ -176,15 +163,8 @@ export interface AssignmentAwardResponse {
   current_level: number;
 }
 
-export function awardAssignment(
-  token: string,
-  assignment: AssignmentAwardRequest
-): Promise<AssignmentAwardResponse> {
-  return apiRequest<AssignmentAwardResponse>(
-    '/submissions/assignment',
-    assignment,
-    token
-  );
+export function awardAssignment(token: string, assignment: AssignmentAwardRequest): Promise<AssignmentAwardResponse> {
+  return apiRequest<AssignmentAwardResponse>('/submissions/assignment', assignment, token);
 }
 
 // student only, the logged in student's points and level
@@ -311,15 +291,9 @@ export interface AdminSubmissionPage {
   submissions: AdminSubmissionRow[];
 }
 
-export function getAdminUserSubmissions(
-  token: string,
-  userId: number,
-  limit = 20,
-  offset = 0,
+export function getAdminUserSubmissions(token: string, userId: number, limit = 20, offset = 0,
 ): Promise<AdminSubmissionPage> {
   return apiRequest<AdminSubmissionPage>(
     `/admin/users/${userId}/submissions?limit=${limit}&offset=${offset}`,
-    undefined,
-    token,
-  );
+    undefined, token,);
 }

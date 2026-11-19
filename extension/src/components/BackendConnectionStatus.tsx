@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  checkBackendHealth,
-  validateSubmissionMetadata,
-} from '../services/api';
+import { checkBackendHealth, validateSubmissionMetadata, } from '../services/api';
 
 type BackendStatus = 'checking' | 'connected' | 'offline';
 
@@ -27,12 +24,11 @@ export default function BackendConnectionStatus() {
     setTesting(true);
     setMessage('');
     try {
-      // Synthetic example ONLY. Nothing is stored in MySQL.
+// Synthetic example ONLY. Nothing is stored in MySQL.
       const result = await validateSubmissionMetadata({
         assignment_title: 'SubmitEXP connection test',
         course_name: 'Demo Course',
-        submission_type: 'assignment',
-      });
+        submission_type: 'assignment', });
       setStatus(result.accepted ? 'connected' : 'offline');
       setMessage(result.message);
     } catch (error) {

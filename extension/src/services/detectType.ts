@@ -1,5 +1,4 @@
 // detect tests and exams (backlog item 10)
-
 export type SubmissionType = 'assignment' | 'quiz' | 'test' | 'exam';
 
 export type TypeDetection = {
@@ -31,8 +30,7 @@ const QUIZ_PAGE_SIGNS = [
   /attempt history/i,
   /allowed attempts/i,
   /take the quiz/i,
-  /quiz instructions/i,
-];
+  /quiz instructions/i,];
 
 // proctoring tools are almost only used for tests and exams
 const PROCTORED = /\b(?:lockdown browser|respondus|honorlock|proctorio|proctoru|proctored)\b/i;
@@ -54,7 +52,7 @@ export function detectSubmissionType(title: string | null, ocrText: string): Typ
   const name = title ?? '';
   const fallback: SubmissionType = quizPage ? 'quiz' : 'assignment';
 
-  // practice exam or test review stays low stakes
+// practice exam or test review stays low stakes
   const practice = matchedWord(PRACTICE_WORDS, name);
   if (practice && (EXAM_WORDS.test(name) || TEST_WORDS.test(name) || FINAL_WORD.test(name))) {
     return { type: fallback, reason: `title says "${practice}", so it is not graded as a real test or exam` };
@@ -75,7 +73,7 @@ export function detectSubmissionType(title: string | null, ocrText: string): Typ
     return { type: 'test', reason: `title contains "${testWord}"` };
   }
 
-  // no clue in the title but it needs a lockdown browser or proctor
+// no clue in the title but it needs a lockdown browser or proctor
   if (quizPage && proctored) {
     return { type: 'test', reason: 'quiz page uses a proctoring tool' };
   }

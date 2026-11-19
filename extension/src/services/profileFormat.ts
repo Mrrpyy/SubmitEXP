@@ -1,4 +1,4 @@
-// ---------- profile display helpers ----------
+//profile display helpers
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -28,8 +28,7 @@ export function formatLastSubmitted(value: string | null | undefined, now: Date 
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric',
-    });
+      year: 'numeric', });
   }
   if (daysAgo === 0) return 'today';
   if (daysAgo === 1) return 'yesterday';

@@ -45,9 +45,7 @@ describe('Canvas assignment parsing', () => {
   });
 
   it('does not invent a year', () => {
-    const result = parseSubmission(
-      'Assignments > Homework 2\nDue: Oct 20 at 11:59 PM'
-    );
+    const result = parseSubmission('Assignments > Homework 2\nDue: Oct 20 at 11:59 PM');
 
     expect(result.dueAt).toBeNull();
     expect(result.missing).toContain('dueAt');
@@ -80,17 +78,13 @@ describe('Canvas assignment parsing', () => {
   });
 
   it('reports missing submission information', () => {
-    const result = parseSubmission(
-      'Assignments > Homework 4\nDue: Oct 20, 2026 at 11:59 PM'
-    );
+    const result = parseSubmission('Assignments > Homework 4\nDue: Oct 20, 2026 at 11:59 PM');
 
     expect(result.missing).toContain('submittedAt');
   });
 
   it('preserves quiz classification', () => {
-    const result = parseSubmission(
-      'Quizzes > Weekly Quiz\nTime Limit: 20 Minutes'
-    );
+    const result = parseSubmission('Quizzes > Weekly Quiz\nTime Limit: 20 Minutes');
 
     expect(result.type).toBe('quiz');
     expect(result.missing).toContain('submission');

@@ -1,10 +1,8 @@
 from datetime import datetime
 from decimal import Decimal
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
-
 from app.api import profile
 from app.api.auth import UserInfo, get_current_user
 from app.main import app
@@ -16,14 +14,8 @@ ADMIN_USER = UserInfo(user_id=1, username='admin_user', email='admin@example.com
 
 JOINED = datetime(2026, 9, 15, 12, 0, 0)
 
-STATS_ROW = {
-    'total_points': 175,
-    'submissions_recorded': 4,
-    'early_submissions': 3,
-    'best_award': 60,
-    'average_award': Decimal('44'),
-    'last_submitted_at': datetime(2026, 11, 10, 20, 30, 0),
-}
+STATS_ROW = { 'total_points': 175, 'submissions_recorded': 4, 'early_submissions': 3, 'best_award': 60,
+    'average_award': Decimal('44'), 'last_submitted_at': datetime(2026, 11, 10, 20, 30, 0), }
 
 
 @pytest.fixture
@@ -92,15 +84,9 @@ def test_only_own_profile_is_loaded(client, monkeypatch):
 
 def test_new_student_starts_at_zero(client, monkeypatch):
     log_in_as(STUDENT_USER)
-    # no submissions means mysql returns nulls for max and avg
-    empty_row = {
-        'total_points': 0,
-        'submissions_recorded': 0,
-        'early_submissions': None,
-        'best_award': None,
-        'average_award': None,
-        'last_submitted_at': None,
-    }
+# no submissions means mysql returns nulls for max and avg
+    empty_row = { 'total_points': 0, 'submissions_recorded': 0, 'early_submissions': None, 'best_award': None,
+        'average_award': None, 'last_submitted_at': None, }
     monkeypatch.setattr(profile, 'load_member_since', lambda user_id: JOINED)
     monkeypatch.setattr(profile, 'load_stats', lambda user_id: empty_row)
     stats = client.get('/profile').json()['stats']

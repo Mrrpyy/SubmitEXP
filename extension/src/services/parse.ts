@@ -20,8 +20,7 @@ const DATE_PART = String.raw`(?:[a-z]{3,9},?\s+)?([a-z]{3,9})\s+(\d{1,2})(?:,?\s
 const DUE = new RegExp(String.raw`\bdue(?:\s+date)?\s*:?\s*${DATE_PART}`, 'i');
 const SUBMITTED = new RegExp(
   String.raw`\b(?:submitted|submited|sumitted)(?:\s+(?:on|at))?\s*[:!]?\s*${DATE_PART}`,
-  'i'
-);
+  'i');
 
 function dateFromMatch(match: RegExpMatchArray | null, fallbackYear?: number): string | null {
   if (!match) return null;
@@ -81,11 +80,9 @@ export function parseSubmission(ocrText: string, years?: number | { due?: number
   const dueMatch = ocrText.match(DUE);
   const submittedMatch = ocrText.match(SUBMITTED);
 
-  const dueYear =
-  typeof years === 'number' ? years : years?.due;
+  const dueYear = typeof years === 'number' ? years : years?.due;
 
-const submittedYear =
-  typeof years === 'number' ? years : years?.submitted;
+const submittedYear = typeof years === 'number' ? years : years?.submitted;
 
 const dueAt = dateFromMatch(dueMatch, dueYear);
 const submittedAt = dateFromMatch(submittedMatch, submittedYear);

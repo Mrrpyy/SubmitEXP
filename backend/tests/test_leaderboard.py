@@ -1,20 +1,16 @@
 from decimal import Decimal
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
-
 from app.api import leaderboard
 from app.api.auth import UserInfo, get_current_user
 from app.main import app
 
 STUDENT = UserInfo(user_id=3, username='student', email='student@example.com', role='student')
 ADMIN = UserInfo(user_id=1, username='admin', email='admin@example.com', role='admin')
-ROWS = [
-    {'user_id': 2, 'username': 'amber', 'total_points': Decimal('300'), 'submissions_recorded': 4},
+ROWS = [{'user_id': 2, 'username': 'amber', 'total_points': Decimal('300'), 'submissions_recorded': 4},
     {'user_id': 3, 'username': 'blair', 'total_points': 300, 'submissions_recorded': 3},
-    {'user_id': 5, 'username': 'casey', 'total_points': 120, 'submissions_recorded': 2},
-]
+    {'user_id': 5, 'username': 'casey', 'total_points': 120, 'submissions_recorded': 2},]
 
 
 @pytest.fixture

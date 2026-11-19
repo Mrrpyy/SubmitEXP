@@ -1,6 +1,5 @@
 import pytest
 from fastapi.testclient import TestClient
-
 from app.api import auth
 from app.core.passwords import verify_password
 from app.main import app
@@ -71,11 +70,16 @@ def test_duplicate_email_any_case(fake_db):
 
 # each of these should get rejected with a 422
 @pytest.mark.parametrize('changes', [
-    {'username': 'ab'},           # too short
-    {'username': 'bad name!'},    # spaces and symbols
-    {'email': 'not-an-email'},    # not an email
-    {'password': 'short'},        # under 8 characters
-    {'password': 'x' * 73},       # over the bcrypt limit
+# too short
+    {'username': 'ab'},
+# spaces and symbols
+    {'username': 'bad name!'},
+# not an email
+    {'email': 'not-an-email'},
+# under 8 characters
+    {'password': 'short'},
+# over the bcrypt limit
+    {'password': 'x' * 73},
 ])
 def test_bad_input_rejected(fake_db, changes):
     assert client.post('/auth/register', json=good_body(**changes)).status_code == 422

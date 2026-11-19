@@ -2,19 +2,14 @@ import { useEffect, useState } from 'react';
 import { getProfile } from '../services/api';
 import type { Profile, User } from '../services/api';
 import { loadSession } from '../services/session';
-import {
-  earlyRate,
-  formatLastSubmitted,
-  formatMemberSince,
-  initialFor,
-} from '../services/profileFormat';
+import { earlyRate, formatLastSubmitted, formatMemberSince, initialFor, } from '../services/profileFormat';
 
 // user profile and dashboard (backlog item 15)
 
 interface ProfileDashboardProps {
   user: User;
   onLogout: () => void;
-  // changes after exp is recorded so the numbers reload
+// changes after exp is recorded so the numbers reload
   refreshKey: number;
 }
 
@@ -22,7 +17,7 @@ export default function ProfileDashboard({ user, onLogout, refreshKey }: Profile
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // ---------- load profile ----------
+// ---------- load profile ----------
 
   useEffect(() => {
     let cancelled = false;
@@ -33,7 +28,7 @@ export default function ProfileDashboard({ user, onLogout, refreshKey }: Profile
     async function fetchProfile() {
       try {
         const session = await loadSession();
-        // stops a stale login from loading someone else
+// stops a stale login from loading someone else
         if (!session || session.user.user_id !== user.user_id) return;
         const result = await getProfile(session.token);
         if (!cancelled) setProfile(result);
@@ -50,7 +45,7 @@ export default function ProfileDashboard({ user, onLogout, refreshKey }: Profile
 
   const stats = profile?.user_id === user.user_id? profile.stats: null;
 
-  // ---------- account card ----------
+// ---------- account card ----------
 
   return (
     <section className="panel profile-panel">
@@ -71,7 +66,7 @@ export default function ProfileDashboard({ user, onLogout, refreshKey }: Profile
 
       {error && <p className="form-error">{error}</p>}
 
-      {/* ---------- student stats ---------- */}
+{/* ---------- student stats ---------- */}
       {stats && (
         <>
           <div className="stat-grid">

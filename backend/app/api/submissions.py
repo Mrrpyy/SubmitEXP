@@ -29,33 +29,18 @@ class AssignmentSubmissionResponse(BaseModel):
     total_points: int
     current_level: int
 
-@router.post(
-    "/assignment",
-    response_model=AssignmentSubmissionResponse,
-    status_code=status.HTTP_201_CREATED,
-)
+@router.post("/assignment", response_model=AssignmentSubmissionResponse, status_code=status.HTTP_201_CREATED)
 def award_assignment(
     body: AssignmentSubmissionRequest,
 # only students earn EXP, admins get a 403
-    user: UserInfo = Depends(require_student),
-) -> AssignmentSubmissionResponse:
+    user: UserInfo = Depends(require_student)) -> AssignmentSubmissionResponse:
     try:
-        points = calculate_assignment_points(
-            body.due_at,
-            body.submitted_at,
-        )
+        points = calculate_assignment_points(body.due_at, body.submitted_at)
     except ValueError as exc:
-        raise HTTPException(
-            status_code=422,
-            detail=str(exc),
-        ) from exc
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 # Store all database DATETIME values in UTC.
-    due_utc = body.due_at.astimezone(
-        timezone.utc
-    ).replace(tzinfo=None)
-    submitted_utc = body.submitted_at.astimezone(
-        timezone.utc
-    ).replace(tzinfo=None)
+    due_utc = body.due_at.astimezone(timezone.utc).replace(tzinfo=None)
+    submitted_utc = body.submitted_at.astimezone(timezone.utc).replace(tzinfo=None)
     try:
 # All database writes succeed or fail together.
         with get_engine().begin() as connection:
@@ -75,8 +60,7 @@ def award_assignment(
                     "submitted_at": submitted_utc,
                     "canvas_course_id": body.canvas_course_id,
                     "canvas_assignment_id": body.canvas_assignment_id,
-                },
-            )
+                })
             submission_id = int(result.lastrowid)
             connection.execute(
                 text("""
@@ -95,8 +79,7 @@ def award_assignment(
                     "submission_id": submission_id,
                     "points": points,
                     "reason": "Assignment submission timing",
-                },
-            )
+                })
             connection.execute(
                 text("""
                     INSERT INTO user_progress (
@@ -113,8 +96,7 @@ def award_assignment(
                 {
                     "user_id": user.user_id,
                     "points": points,
-                },
-            )
+                })
 #Recalculate the level after adding EXP ,runs inside the existing database transaction
             connection.execute(
                 text("""
@@ -126,8 +108,7 @@ def award_assignment(
                 {
                     "exp_per_level": EXP_PER_LEVEL,
                     "user_id": user.user_id,
-                },
-            )
+                })
 
             progress = connection.execute(
                 text("""
@@ -135,31 +116,17 @@ def award_assignment(
                     FROM user_progress
                     WHERE user_id = :user_id
                 """),
-                {"user_id": user.user_id},
-            ).mappings().one()
+                {"user_id": user.user_id}).mappings().one()
 
             total_points = int(progress["total_points"])
             current_level = int(progress["current_level"])
     except IntegrityError as exc:
 # MySQL error 1062: duplicate unique key.
         if getattr(exc.orig, "args", ())[:1] == (1062,):
-            raise HTTPException(
-                status_code=409,
-                detail="Points already recorded for this assignment",
-            ) from exc
+            raise HTTPException(status_code=409, detail="Points already recorded for this assignment") from exc
 
-        raise HTTPException(
-            status_code=503,
-            detail="Database write failed",
-        ) from exc
+        raise HTTPException(status_code=503, detail="Database write failed") from exc
     except (DatabaseNotConfigured, SQLAlchemyError) as exc:
-        raise HTTPException(
-            status_code=503,
-            detail="Database is not available",
-        ) from exc
-    return AssignmentSubmissionResponse(
-        submission_id=submission_id,
-        points_awarded=points,
-        total_points=total_points,
-        current_level=current_level,
-    )
+        raise HTTPException(status_code=503, detail="Database is not available") from exc
+    return AssignmentSubmissionResponse(submission_id=submission_id, points_awarded=points, total_points=total_points,
+        current_level=current_level)

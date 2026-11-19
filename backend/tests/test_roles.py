@@ -1,10 +1,8 @@
 from unittest.mock import MagicMock
-
 import jwt
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
-
 import app.api.auth as auth
 from app.api import admin, student, submissions
 from app.api.auth import UserInfo, get_current_user
@@ -17,21 +15,15 @@ ADMIN_USER = UserInfo(user_id=1, username='admin_user', email='admin@example.com
 
 USER_ROWS = [
     {'user_id': 3, 'username': 'student_user', 'email': 'student@example.com', 'role': 'student', 'total_points': 25},
-    {'user_id': 1, 'username': 'admin_user', 'email': 'admin@example.com', 'role': 'admin', 'total_points': 0},
-]
+    {'user_id': 1, 'username': 'admin_user', 'email': 'admin@example.com', 'role': 'admin', 'total_points': 0},]
 
-ASSIGNMENT = {
-    'canvas_course_id': 900000000001,
-    'canvas_assignment_id': 900000000002,
-    'assignment_title': 'Roles Test',
-    'due_at': '2026-10-18T23:59:00Z',
-    'submitted_at': '2026-10-16T20:00:00Z',
-}
+ASSIGNMENT = { 'canvas_course_id': 900000000001, 'canvas_assignment_id': 900000000002,
+    'assignment_title': 'Roles Test', 'due_at': '2026-10-18T23:59:00Z', 'submitted_at': '2026-10-16T20:00:00Z', }
 
 
 @pytest.fixture(autouse=True)
 def test_secret(monkeypatch):
-    # tokens need a secret, this one is only for tests
+# tokens need a secret, this one is only for tests
     monkeypatch.setattr(config, 'JWT_SECRET', 'test-only-secret-that-is-long-enough-for-hs256')
 
 
@@ -70,17 +62,10 @@ def test_student_sees_own_progress(client, monkeypatch):
     monkeypatch.setattr(student, 'load_progress', fake_progress)
     response = client.get('/student/progress')
     assert response.status_code == 200
-    assert response.json() == {
-        'username': 'student_user',
-        'total_points': 25,
-        'current_level': 1,
-        'submissions_recorded': 2,
-        'exp_in_level': 25,
-        'exp_for_next_level': 100,
-        'exp_to_next_level': 75,
-        'progress_percent': 25,
-    }
-    # only the logged in student's id is looked up
+    assert response.json() == { 'username': 'student_user', 'total_points': 25, 'current_level': 1,
+        'submissions_recorded': 2, 'exp_in_level': 25, 'exp_for_next_level': 100, 'exp_to_next_level': 75,
+        'progress_percent': 25, }
+# only the logged in student's id is looked up
     assert asked_for == [3]
 
 
@@ -159,24 +144,20 @@ def test_admin_cannot_earn_exp(client, monkeypatch):
 # the role comes from the database, not from the token
 
 def test_role_is_read_from_database_not_token(client, monkeypatch):
-    # token is fine, but the database says this account is a student
+# token is fine, but the database says this account is a student
     monkeypatch.setattr(auth, 'read_user_id', lambda token: 3)
-    monkeypatch.setattr(
-        auth, 'find_user_by_id',
-        lambda user_id: {'user_id': 3, 'username': 'student_user', 'email': 'student@example.com', 'role': 'student'},
-    )
+    monkeypatch.setattr(auth, 'find_user_by_id',
+        lambda user_id: {'user_id': 3, 'username': 'student_user', 'email': 'student@example.com', 'role': 'student'})
     monkeypatch.setattr(admin, 'load_all_users', lambda: pytest.fail('database should not be touched'))
     response = client.get('/admin/users', headers={'Authorization': 'Bearer looks-like-an-admin-token'})
     assert response.status_code == 403
 
 
 def test_demoted_admin_loses_access_right_away(client, monkeypatch):
-    # account was admin when the token was made, then got changed to student
+# account was admin when the token was made, then got changed to student
     token = create_access_token(1, 'admin')
-    monkeypatch.setattr(
-        auth, 'find_user_by_id',
-        lambda user_id: {'user_id': 1, 'username': 'old_admin', 'email': 'old@example.com', 'role': 'student'},
-    )
+    monkeypatch.setattr(auth, 'find_user_by_id',
+        lambda user_id: {'user_id': 1, 'username': 'old_admin', 'email': 'old@example.com', 'role': 'student'})
     response = client.get('/admin/users', headers={'Authorization': f'Bearer {token}'})
     assert response.status_code == 403
 

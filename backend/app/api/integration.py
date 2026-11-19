@@ -1,5 +1,4 @@
 """Diagnostic endpoint for extension-to-backend integration (no database writes)."""
-
 from datetime import datetime
 from typing import Literal
 from fastapi import APIRouter
@@ -9,7 +8,7 @@ from point_calculator import calculate_assignment_points
 router = APIRouter(prefix="/integration", tags=["integration"])
 
 class SubmissionMetadata(BaseModel):
-    # Do not accept screenshots, passwords, user IDs or arbitrary extra fields.
+# Do not accept screenshots, passwords, user IDs or arbitrary extra fields.
     model_config = ConfigDict(extra="forbid")
 
     assignment_title: str = Field(min_length=1, max_length=255)
@@ -29,11 +28,8 @@ def validate_metadata(body: SubmissionMetadata) -> ValidationResponse:
     This is NOT an authenticated submission endpoint. It does not persist data
     or award points. Add those capabilities after login and point logic exist.
     """
-    return ValidationResponse(
-        accepted=True,
-        submission_type=body.submission_type,
-        message="Metadata validated (not saved; no points awarded).",
-    )
+    return ValidationResponse(accepted=True, submission_type=body.submission_type,
+        message="Metadata validated (not saved; no points awarded).")
 
 class AssignmentPointsRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -45,25 +41,11 @@ class AssignmentPointsResponse(BaseModel):
     points: int
     message: str
 
-@router.post(
-    "/assignment-points-preview",
-    response_model=AssignmentPointsResponse
-)
-def preview_assignment_points(
-    body: AssignmentPointsRequest
-) -> AssignmentPointsResponse:
+@router.post("/assignment-points-preview", response_model=AssignmentPointsResponse)
+def preview_assignment_points(body: AssignmentPointsRequest) -> AssignmentPointsResponse:
     try:
-        points = calculate_assignment_points(
-            due_at=body.due_at,
-            submitted_at=body.submitted_at
-        )
+        points = calculate_assignment_points(due_at=body.due_at, submitted_at=body.submitted_at)
     except ValueError as exc:
         from fastapi import HTTPException
-        raise HTTPException(
-            status_code=422,
-            detail=str(exc)
-        ) from exc
-    return AssignmentPointsResponse(
-        points=points,
-        message="Preview only; no points awarded or saved."
-    )
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return AssignmentPointsResponse(points=points, message="Preview only; no points awarded or saved.")
