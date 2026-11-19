@@ -7,13 +7,9 @@ from app.api.auth import UserInfo, get_current_user
 from app.api.roles import STUDENT
 from app.core.levels import calculate_progress
 from app.db.connection import DatabaseNotConfigured, get_engine
-
 # user profile and dashboard (backlog item 15)
 router = APIRouter(prefix='/profile', tags=['profile'])
-
-
-# ---------- response shapes ----------
-
+# response shapes
 # numbers for the dashboard, students only since admins do not earn exp
 class ProfileStats(BaseModel):
     total_points: int
@@ -28,7 +24,6 @@ class ProfileStats(BaseModel):
     average_award: int
     last_submitted_at: datetime | None
 
-
 class ProfileResponse(BaseModel):
     user_id: int
     username: str
@@ -37,16 +32,13 @@ class ProfileResponse(BaseModel):
     member_since: datetime | None
     stats: ProfileStats | None
 
-
-# ---------- database ----------
-
+# database
 def load_member_since(user_id: int) -> datetime | None:
     query = text('SELECT created_at FROM users WHERE user_id = :user_id')
     with get_engine().connect() as connection:
         connection.execute(text("SET time_zone = '+00:00'"))
         row = connection.execute(query, {'user_id': user_id}).mappings().first()
     return row['created_at'] if row else None
-
 
 # one query for every dashboard number
 def load_stats(user_id: int) -> dict:
@@ -63,9 +55,7 @@ def load_stats(user_id: int) -> dict:
         row = connection.execute(query, {'user_id': user_id}).mappings().first()
     return dict(row) if row else {}
 
-
-# ---------- building the response ----------
-
+# building the response
 # turns raw database numbers into the stats the extension shows
 def build_stats(row: dict) -> ProfileStats:
 # mysql can hand back decimals and none, so force everything to int
@@ -75,9 +65,7 @@ def build_stats(row: dict) -> ProfileStats:
         average_award=int(row.get('average_award') or 0), last_submitted_at=row.get('last_submitted_at'),
         **calculate_progress(total_points))
 
-
-# ---------- endpoint ----------
-
+# endpoint
 # any logged in user sees their own profile, only students get stats
 @router.get('', response_model=ProfileResponse)
 def my_profile(user: UserInfo = Depends(get_current_user)) -> ProfileResponse:

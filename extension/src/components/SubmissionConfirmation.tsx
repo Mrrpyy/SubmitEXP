@@ -1,7 +1,6 @@
 import type { AssignmentAwardResponse } from '../services/api';
 import type { CanvasAssignmentIds } from '../services/chromeHelpers';
 import type { ParsedSubmission } from '../services/parse';
-
 type Props = {
   submission: ParsedSubmission;
   assignmentIds: CanvasAssignmentIds;
@@ -15,7 +14,6 @@ type Props = {
   onRecord: () => void;
   onDone: () => void;
 };
-
 /** A separate review step. Nothing is recorded until the user confirms. */
 export default function SubmissionConfirmation({
   submission, assignmentIds, previewPoints, confirmed, recording, result, error, onConfirmedChange, onBack, onRecord,

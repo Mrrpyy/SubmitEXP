@@ -7,9 +7,9 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.api.auth import UserInfo
 from app.api.roles import require_admin
 from app.db.connection import DatabaseNotConfigured, get_engine
-#endpoints only admins can use
+# endpoints only admins can use
 router = APIRouter(prefix='/admin', tags=['admin'])
-#response shapes
+# response shapes
 # one row in the admin user list, no password hash
 class AdminUserRow(BaseModel):
     user_id: int
@@ -17,10 +17,12 @@ class AdminUserRow(BaseModel):
     email: str
     role: str
     total_points: int
+
 class RoleChangeRequest(BaseModel):
     model_config = ConfigDict(extra='forbid')
-#pydantic rejects anything that is not one of these two
+# pydantic rejects anything that is not one of these two
     role: Literal['student', 'admin']
+
 # totals for the top of the admin interface
 class AdminStats(BaseModel):
     total_users: int
@@ -28,7 +30,8 @@ class AdminStats(BaseModel):
     admins: int
     total_submissions: int
     total_points_awarded: int
-#one submission in an administrator history view
+
+# one submission in an administrator history view
 class AdminSubmissionRow(BaseModel):
     submission_id: int
     assignment_title: str
@@ -40,6 +43,7 @@ class AdminSubmissionRow(BaseModel):
     canvas_course_id: int | None
     canvas_assignment_id: int | None
     points_awarded: int | None
+
 class AdminSubmissionPage(BaseModel):
     user_id: int
     total: int
@@ -49,8 +53,9 @@ class AdminSubmissionPage(BaseModel):
 
 def database_down() -> HTTPException:
     return HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail='Database is not available')
-#database
-#every account with its points newest first
+
+# database
+# every account with its points newest first
 def load_all_users() -> list[dict]:
     query = text('SELECT u.user_id, u.username, u.email, u.role, COALESCE(p.total_points, 0) AS total_points '
         'FROM users u ' 'LEFT JOIN user_progress p ON p.user_id = u.user_id ' 'ORDER BY u.user_id DESC')
@@ -67,7 +72,7 @@ def save_role(user_id: int, role: str) -> None:
         connection.execute(text('UPDATE users SET role = :role WHERE user_id = :user_id'),
             {'role': role, 'user_id': user_id})
 
-#counts for the whole app in one query
+# counts for the whole app in one query
 def load_stats() -> dict:
     query = text('SELECT ' '  (SELECT COUNT(*) FROM users) AS total_users, '
         "  (SELECT COUNT(*) FROM users WHERE role = 'student') AS students, "
@@ -78,7 +83,7 @@ def load_stats() -> dict:
         row = connection.execute(query).mappings().first()
     return dict(row) if row else {}
 
-#Page through one account's submissions. A missing EXP transaction stays null,rather than being reported as a zero-point award.
+# Page through one account's submissions. A missing EXP transaction stays null,rather than being reported as a zero-point award.
 def load_submission_history(user_id: int, limit: int, offset: int) -> tuple[int, list[dict]] | None:
     with get_engine().connect() as connection:
 # TIMESTAMP (created_at) is returned in UTC; DATETIME values are stored as UTC.
@@ -87,7 +92,6 @@ def load_submission_history(user_id: int, limit: int, offset: int) -> tuple[int,
             {'user_id': user_id}).first()
         if found is None:
             return None
-
         total = connection.execute(text('SELECT COUNT(*) FROM submissions WHERE user_id = :user_id'),
             {'user_id': user_id}).scalar_one()
         rows = connection.execute(text('SELECT s.submission_id, s.assignment_title, s.course_name, '
@@ -98,8 +102,7 @@ def load_submission_history(user_id: int, limit: int, offset: int) -> tuple[int,
             {'user_id': user_id, 'limit': limit, 'offset': offset}).mappings().all()
     return int(total), [dict(row) for row in rows]
 
-
-#endpoints
+# endpoints
 @router.get('/users', response_model=list[AdminUserRow])
 def list_users(admin: UserInfo = Depends(require_admin)) -> list[AdminUserRow]:
     try:
@@ -114,7 +117,7 @@ def app_stats(admin: UserInfo = Depends(require_admin)) -> AdminStats:
         row = load_stats()
     except (DatabaseNotConfigured, SQLAlchemyError):
         raise database_down()
-#mysql sum comes back as a decimal, so force ints
+# mysql sum comes back as a decimal, so force ints
     return AdminStats(**{field: int(row.get(field) or 0) for field in AdminStats.model_fields})
 
 @router.get('/users/{user_id}/submissions', response_model=AdminSubmissionPage)
@@ -130,7 +133,7 @@ def user_submissions(user_id: int, limit: int = Query(default=20, ge=1, le=100),
     return AdminSubmissionPage(user_id=user_id, total=total, limit=limit, offset=offset,
         submissions=[AdminSubmissionRow(**row) for row in rows])
 
-#post instead of patch because the server only allows get and post from the extension
+# post instead of patch because the server only allows get and post from the extension
 @router.post('/users/{user_id}/role', response_model=AdminUserRow)
 def change_role(user_id: int, body: RoleChangeRequest, admin: UserInfo = Depends(require_admin)) -> AdminUserRow:
 # stops an admin from removing their own access by mistake

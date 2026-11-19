@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta, timezone
 import jwt
 from app.core import config
-
-#how long the login lasts
+# how long the login lasts
 TOKEN_LIFETIME = timedelta(days=7)
-
 class TokensNotConfigured(RuntimeError):
     pass
 

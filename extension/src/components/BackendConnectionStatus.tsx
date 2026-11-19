@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
 import { checkBackendHealth, validateSubmissionMetadata, } from '../services/api';
-
 type BackendStatus = 'checking' | 'connected' | 'offline';
-
 export default function BackendConnectionStatus() {
   const [status, setStatus] = useState<BackendStatus>('checking');
   const [message, setMessage] = useState('');
   const [testing, setTesting] = useState(false);
-
   useEffect(() => {
     let active = true;
     checkBackendHealth()
@@ -19,7 +16,6 @@ export default function BackendConnectionStatus() {
       });
     return () => { active = false; };
   }, []);
-
   async function testConnection() {
     setTesting(true);
     setMessage('');
@@ -38,7 +34,6 @@ export default function BackendConnectionStatus() {
       setTesting(false);
     }
   }
-
   return (
     <section className="panel" style={{ marginTop: 12 }}>
       <h2>Backend connection</h2>

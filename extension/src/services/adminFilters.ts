@@ -1,9 +1,6 @@
 import type { AdminUserRow, UserRole } from './api';
-
-// ---------- admin list helpers ----------
-
+// admin list helpers
 export type RoleFilter = 'all' | UserRole;
-
 // search matches username or email, any capitals
 export function filterUsers(rows: AdminUserRow[], search: string, role: RoleFilter): AdminUserRow[] {
   const needle = search.trim().toLowerCase();

@@ -6,11 +6,8 @@ from app.core.levels import calculate_progress
 from app.api.auth import UserInfo
 from app.api.roles import require_student
 from app.db.connection import DatabaseNotConfigured, get_engine
-
 # endpoints only students can use
 router = APIRouter(prefix='/student', tags=['student'])
-
-
 class StudentProgress(BaseModel):
     username: str
     total_points: int
@@ -33,7 +30,6 @@ def load_progress(user_id: int) -> dict:
     if row is None:
         return {'total_points': 0, 'current_level': 1, 'submissions_recorded': 0}
     return dict(row)
-
 
 # the logged in student sees only their own points and level
 @router.get('/progress', response_model=StudentProgress)

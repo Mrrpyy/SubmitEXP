@@ -7,7 +7,7 @@ h1 span { color: #4967d5; }
 .motto { margin: 0 0 20px; font-size: 13px; color: #63728b; }
 .panel { background: white; border: 1px solid #e0e5ef; border-radius: 12px; padding: 15px; box-shadow: 0 8px 20px #0d205014; }
 
-/* ---------- student leaderboard ---------- */
+/* student leaderboard */
 .leaderboard-panel { margin-top: 12px; }
 .leaderboard-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .leaderboard-heading h2 { margin: 0; }
@@ -40,7 +40,7 @@ button:not(:disabled) { background: #4967d5; color: white; cursor: pointer; }
 .form-success { color: #067647 !important; font-size: 12px; }
 
 
-/*Login form */
+/* Login form */
 .login-panel form { display: flex; flex-direction: column; gap: 8px; }
 .login-panel label { font-size: 12px; font-weight: 600; color: #172337; }
 .login-panel input { width: 100%; padding: 10px; border: 1px solid #d0d7e2; border-radius: 8px; font-size: 13px; background: white; color: #172337; }
@@ -87,7 +87,7 @@ button.link, button.link:not(:disabled) { background: none; color: #4967d5; padd
 }
 
 
-/* ---------- profile dashboard ---------- */
+/* profile dashboard */
 .profile-header { display: flex; align-items: center; gap: 10px; }
 .avatar { flex: none; width: 40px; height: 40px; border-radius: 50%; background: #4967d5; color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
 .profile-name { flex: 1; min-width: 0; }
@@ -103,7 +103,7 @@ button.link, button.link:not(:disabled) { background: none; color: #4967d5; padd
 .stat span { font-size: 11px; color: #63728b; }
 
 
-/* ---------- separate submission confirmation screen ---------- */
+/* separate submission confirmation screen */
 .submission-confirmation { margin-top: 12px; }
 .submission-confirmation h2 { margin-bottom: 8px; }
 .confirmation-step { margin: 0 0 8px !important; color: #4967d5 !important; font-weight: 700; font-size: 11px !important; }
@@ -122,7 +122,7 @@ button.link, button.link:not(:disabled) { background: none; color: #4967d5; padd
 
 
 
-/* ---------- admin interface ---------- */
+/* admin interface */
 .admin-panel { margin-top: 12px; }
 .admin-title { display: flex; justify-content: space-between; align-items: center; }
 .admin-title button.link { margin-top: 0; font-size: 12px; }
@@ -140,7 +140,7 @@ button.link, button.link:not(:disabled) { background: none; color: #4967d5; padd
 button.small-button { width: auto; margin-top: 0; padding: 6px 8px; font-size: 11px; white-space: nowrap; }
 button.small-button.confirm:not(:disabled) { background: #b54708; }
 
-/* ---------- admin submission history ---------- */
+/* admin submission history */
 .admin-history { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e0e5ef; }
 .admin-history h3 { font-size: 13px; margin: 0; overflow-wrap: anywhere; }
 .admin-history .admin-title button.link { margin-top: 0; }

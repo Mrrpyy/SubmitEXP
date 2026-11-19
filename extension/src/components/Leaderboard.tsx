@@ -2,25 +2,21 @@ import { useEffect, useState } from 'react';
 import { getLeaderboard } from '../services/api';
 import type { LeaderboardResponse, User } from '../services/api';
 import { loadSession } from '../services/session';
-
 interface LeaderboardProps {
   user: User;
 // Changes after recording EXP, so the leaderboard refreshes automatically.
   refreshKey: number;
 }
-
 export default function Leaderboard({ user, refreshKey }: LeaderboardProps) {
   const [data, setData] = useState<LeaderboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-
   useEffect(() => {
     let cancelled = false;
     setData(null);
     setLoading(true);
     setError(null);
-
     async function load() {
       try {
         const session = await loadSession();
@@ -37,11 +33,9 @@ export default function Leaderboard({ user, refreshKey }: LeaderboardProps) {
         if (!cancelled) setLoading(false);
       }
     }
-
     void load();
     return () => { cancelled = true; };
   }, [user.user_id, refreshKey, reloadKey]);
-
   return (
     <section className="panel leaderboard-panel">
       <div className="leaderboard-heading">

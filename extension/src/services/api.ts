@@ -10,37 +10,30 @@ export interface SubmissionMetadata {
 // ISO 8601 date/time
   submitted_at?: string | null;
 }
-
 export interface ValidationResponse {
   accepted: boolean;
   submission_type: SubmissionType;
   message: string;
 }
-
 interface HealthResponse {
   status: string;
 }
-
 // the two roles the backend allows
 export type UserRole = 'student' | 'admin';
-
 export interface User {
   user_id: number;
   username: string;
   email: string;
   role: UserRole;
 }
-
 export interface LoginResponse {
   access_token: string;
   token_type: string;
   user: User;
 }
-
 // remembers the HTTP status so the popup can tell "login expired" from "backend offline"
 export class ApiError extends Error {
   status?: number;
-
   constructor(message: string, status?: number) {
     super(message);
     this.status = status;
@@ -50,37 +43,29 @@ export class ApiError extends Error {
 async function apiRequest<T>(path: string, body?: unknown, token?: string): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
-
   try {
     const options: RequestInit = {
       method: body === undefined ? 'GET' : 'POST',
       signal: controller.signal, };
-
     const headers: Record<string, string> = {};
-
     if (body !== undefined) {
       headers['Content-Type'] = 'application/json';
       options.body = JSON.stringify(body);
     }
-
 // Logged in requests carry the login token from /auth/login.
     if (token) headers.Authorization = `Bearer ${token}`;
     options.headers = headers;
-
     const response = await fetch(`${API_BASE_URL}${path}`, options);
     const data: unknown = await response.json().catch(() => null);
-
     if (!response.ok) {
       let reason = `Backend returned HTTP ${response.status}`;
       if (data && typeof data === 'object' && 'detail' in data) {
         const detail = data.detail;
         if (typeof detail === 'string') reason = detail;
-
         else if (Array.isArray(detail) && typeof detail[0]?.msg === 'string') reason = detail[0].msg;
       }
       throw new ApiError(reason, response.status);
     }
-
     if (data === null) throw new Error('Backend returned invalid JSON');
     return data as T;
   } catch (error) {
@@ -105,21 +90,18 @@ export async function checkBackendHealth(): Promise<boolean> {
 export function validateSubmissionMetadata(metadata: SubmissionMetadata,): Promise<ValidationResponse> {
   return apiRequest<ValidationResponse>('/integration/validate', metadata);
 }
-
 // Implementation for user registration.
 export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
 }
-
 export interface RegisterResponse {
   user_id: number;
   username: string;
   email: string;
   role: string;
 }
-
 export function registerUser(user: RegisterRequest): Promise<RegisterResponse> {
   return apiRequest<RegisterResponse>('/auth/register', user);
 }
@@ -133,7 +115,6 @@ export function loginUser(identifier: string, password: string): Promise<LoginRe
 export function getCurrentUser(token: string): Promise<User> {
   return apiRequest<User>('/auth/me', undefined, token);
 }
-
 // Assignment EXP calculation
 export interface AssignmentPointsResponse {
   points: number;
@@ -145,7 +126,6 @@ export function previewAssignmentPoints(dueAt: string, submittedAt: string): Pro
       submitted_at: submittedAt, }
   );
 }
-
 // Authenticated assignment EXP recording
 export interface AssignmentAwardRequest {
   canvas_course_id: number;
@@ -155,18 +135,15 @@ export interface AssignmentAwardRequest {
   due_at: string;
   submitted_at: string;
 }
-
 export interface AssignmentAwardResponse {
   submission_id: number;
   points_awarded: number;
   total_points: number;
   current_level: number;
 }
-
 export function awardAssignment(token: string, assignment: AssignmentAwardRequest): Promise<AssignmentAwardResponse> {
   return apiRequest<AssignmentAwardResponse>('/submissions/assignment', assignment, token);
 }
-
 // student only, the logged in student's points and level
 export interface StudentProgress {
   username: string;
@@ -178,11 +155,9 @@ export interface StudentProgress {
   exp_to_next_level: number;
   progress_percent: number;
 }
-
 export function getStudentProgress(token: string): Promise<StudentProgress> {
   return apiRequest<StudentProgress>('/student/progress', undefined, token);
 }
-
 // Authenticated rankings: public usernames and EXP, no emails.
 export interface LeaderboardEntry {
   rank: number;
@@ -192,20 +167,16 @@ export interface LeaderboardEntry {
   current_level: number;
   submissions_recorded: number;
 }
-
 export interface LeaderboardResponse {
   total_students: number;
   leaders: LeaderboardEntry[];
   your_rank: number | null;
   your_total_points: number | null;
 }
-
 export function getLeaderboard(token: string): Promise<LeaderboardResponse> {
   return apiRequest<LeaderboardResponse>('/leaderboard', undefined, token);
 }
-
-// ---------- profile dashboard ----------
-
+// profile dashboard
 // dashboard numbers, only students have these
 export interface ProfileStats {
   total_points: number;
@@ -220,7 +191,6 @@ export interface ProfileStats {
   average_award: number;
   last_submitted_at: string | null;
 }
-
 export interface Profile {
   user_id: number;
   username: string;
@@ -229,12 +199,10 @@ export interface Profile {
   member_since: string | null;
   stats: ProfileStats | null;
 }
-
 // any logged in user, returns their own profile
 export function getProfile(token: string): Promise<Profile> {
   return apiRequest<Profile>('/profile', undefined, token);
 }
-
 // admin only, every account and its points
 export interface AdminUserRow {
   user_id: number;
@@ -243,7 +211,6 @@ export interface AdminUserRow {
   role: UserRole;
   total_points: number;
 }
-
 export function listUsers(token: string): Promise<AdminUserRow[]> {
   return apiRequest<AdminUserRow[]>('/admin/users', undefined, token);
 }
@@ -252,9 +219,7 @@ export function listUsers(token: string): Promise<AdminUserRow[]> {
 export function changeUserRole(token: string, userId: number, role: UserRole): Promise<AdminUserRow> {
   return apiRequest<AdminUserRow>(`/admin/users/${userId}/role`, { role }, token);
 }
-
-// ---------- admin interface ----------
-
+// admin interface
 // admin only, totals for the whole app
 export interface AdminStats {
   total_users: number;
@@ -263,13 +228,10 @@ export interface AdminStats {
   total_submissions: number;
   total_points_awarded: number;
 }
-
 export function getAdminStats(token: string): Promise<AdminStats> {
   return apiRequest<AdminStats>('/admin/stats', undefined, token);
 }
-
-// ---------- admin: individual submission history ----------
-
+// admin: individual submission history
 export interface AdminSubmissionRow {
   submission_id: number;
   assignment_title: string;
@@ -282,7 +244,6 @@ export interface AdminSubmissionRow {
   canvas_assignment_id: number | null;
   points_awarded: number | null;
 }
-
 export interface AdminSubmissionPage {
   user_id: number;
   total: number;
@@ -290,7 +251,6 @@ export interface AdminSubmissionPage {
   offset: number;
   submissions: AdminSubmissionRow[];
 }
-
 export function getAdminUserSubmissions(token: string, userId: number, limit = 20, offset = 0,
 ): Promise<AdminSubmissionPage> {
   return apiRequest<AdminSubmissionPage>(

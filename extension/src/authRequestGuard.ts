@@ -1,6 +1,5 @@
 export class AuthRequestGuard {
   private currentRequest = 0;
-
   begin(): number {
     this.currentRequest += 1;
     return this.currentRequest;

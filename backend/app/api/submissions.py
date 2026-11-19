@@ -1,4 +1,4 @@
-#Authenticated assignment submission and EXP awards.
+# Authenticated assignment submission and EXP awards.
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
@@ -9,13 +9,9 @@ from app.api.roles import require_student
 from app.db.connection import DatabaseNotConfigured, get_engine
 from point_calculator import calculate_assignment_points
 from app.core.levels import EXP_PER_LEVEL
-
-
 router = APIRouter(prefix="/submissions", tags=["submissions"])
-
 class AssignmentSubmissionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     canvas_course_id: int = Field(gt=0)
     canvas_assignment_id: int = Field(gt=0)
     assignment_title: str = Field(min_length=1, max_length=255)
@@ -44,7 +40,6 @@ def award_assignment(
     try:
 # All database writes succeed or fail together.
         with get_engine().begin() as connection:
-
             result = connection.execute(
                 text("""
                     INSERT INTO submissions (user_id,assignment_title,course_name,
@@ -97,7 +92,7 @@ def award_assignment(
                     "user_id": user.user_id,
                     "points": points,
                 })
-#Recalculate the level after adding EXP ,runs inside the existing database transaction
+# Recalculate the level after adding EXP ,runs inside the existing database transaction
             connection.execute(
                 text("""
                     UPDATE user_progress
@@ -109,7 +104,6 @@ def award_assignment(
                     "exp_per_level": EXP_PER_LEVEL,
                     "user_id": user.user_id,
                 })
-
             progress = connection.execute(
                 text("""
                     SELECT total_points, current_level
@@ -117,14 +111,12 @@ def award_assignment(
                     WHERE user_id = :user_id
                 """),
                 {"user_id": user.user_id}).mappings().one()
-
             total_points = int(progress["total_points"])
             current_level = int(progress["current_level"])
     except IntegrityError as exc:
 # MySQL error 1062: duplicate unique key.
         if getattr(exc.orig, "args", ())[:1] == (1062,):
             raise HTTPException(status_code=409, detail="Points already recorded for this assignment") from exc
-
         raise HTTPException(status_code=503, detail="Database write failed") from exc
     except (DatabaseNotConfigured, SQLAlchemyError) as exc:
         raise HTTPException(status_code=503, detail="Database is not available") from exc

@@ -1,9 +1,7 @@
 import pytest
 from datetime import datetime, timezone
 from point_calculator import calculate_assignment_points
-
 DUE_DATE = "2026-10-25T23:59:00Z"
-
 def test_assignment_submitted_early():
 # More than 24 hours early
     points = calculate_assignment_points(DUE_DATE, "2026-10-23T20:00:00Z")
@@ -29,7 +27,6 @@ def test_assignment_submitted_late():
 def test_assignment_datetime_objects():
     due = datetime(2026, 10, 25, 23, 59, tzinfo=timezone.utc)
     submitted = datetime(2026, 10, 24, 20, 0, tzinfo=timezone.utc)
-
     assert calculate_assignment_points(due, submitted) == 15
 
 def test_assignment_missing_timezone():

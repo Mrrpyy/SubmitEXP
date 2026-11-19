@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta, timezone
-
 # Assignment EXP rules
 ASSIGNMENT_BASE_POINTS = 10
 ASSIGNMENT_EARLY_BONUS_POINTS = 5
 ASSIGNMENT_EARLY_BONUS_THRESHOLD = timedelta(hours=24)
 LATE_ASSIGNMENT_POINTS = 0
-
 def _to_utc(value: datetime | str, field_name: str) -> datetime:
     if isinstance(value, str):
         try:

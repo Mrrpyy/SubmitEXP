@@ -3,7 +3,6 @@
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('SubmitEXP installed:', details.reason);
 });
-
 // the popup sends a PING message to check this worker is running
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === 'PING') {

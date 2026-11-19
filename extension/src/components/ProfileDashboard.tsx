@@ -3,28 +3,21 @@ import { getProfile } from '../services/api';
 import type { Profile, User } from '../services/api';
 import { loadSession } from '../services/session';
 import { earlyRate, formatLastSubmitted, formatMemberSince, initialFor, } from '../services/profileFormat';
-
 // user profile and dashboard (backlog item 15)
-
 interface ProfileDashboardProps {
   user: User;
   onLogout: () => void;
 // changes after exp is recorded so the numbers reload
   refreshKey: number;
 }
-
 export default function ProfileDashboard({ user, onLogout, refreshKey }: ProfileDashboardProps) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-// ---------- load profile ----------
-
+// load profile
   useEffect(() => {
     let cancelled = false;
     setProfile(null);
     setError(null);
-
-
     async function fetchProfile() {
       try {
         const session = await loadSession();
@@ -36,17 +29,13 @@ export default function ProfileDashboard({ user, onLogout, refreshKey }: Profile
         if (!cancelled) setError(err instanceof Error ? err.message : 'Unable to load profile');
       }
     }
-
     void fetchProfile();
     return () => {
       cancelled = true;
     };
   }, [user.user_id, user.role, refreshKey]);
-
   const stats = profile?.user_id === user.user_id? profile.stats: null;
-
-// ---------- account card ----------
-
+// account card
   return (
     <section className="panel profile-panel">
       <div className="profile-header">

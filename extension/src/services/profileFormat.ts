@@ -1,7 +1,5 @@
-//profile display helpers
-
+// profile display helpers
 const DAY_MS = 24 * 60 * 60 * 1000;
-
 // the backend stores utc without a timezone, so add one before parsing
 export function parseServerDate(value: string | null | undefined): Date | null {
   if (!value) return null;

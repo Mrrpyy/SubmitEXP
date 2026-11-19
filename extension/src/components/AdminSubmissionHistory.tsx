@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { getAdminUserSubmissions } from '../services/api';
 import type { AdminSubmissionPage, AdminUserRow, User } from '../services/api';
 import { loadSession } from '../services/session';
-
 const PAGE_SIZE = 20;
-
 // The submission DATETIME values are stored as UTC without an offset.
 function formatDate(value: string | null): string {
   if (!value) return 'Not recorded';
@@ -15,25 +13,21 @@ function formatDate(value: string | null): string {
     month: 'short', day: 'numeric', year: 'numeric',
     hour: 'numeric', minute: '2-digit', });
 }
-
 interface Props {
   currentUser: User;
   selectedUser: AdminUserRow;
   onClose: () => void;
 }
-
 export default function AdminSubmissionHistory({ currentUser, selectedUser, onClose }: Props) {
   const [pageIndex, setPageIndex] = useState(0);
   const [history, setHistory] = useState<AdminSubmissionPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setHistory(null);
     setError(null);
-
     async function fetchHistory() {
       try {
         const session = await loadSession();
@@ -51,14 +45,11 @@ export default function AdminSubmissionHistory({ currentUser, selectedUser, onCl
         if (!cancelled) setLoading(false);
       }
     }
-
     void fetchHistory();
     return () => { cancelled = true; };
   }, [currentUser.user_id, selectedUser.user_id, pageIndex]);
-
   const start = pageIndex * PAGE_SIZE;
   const count = history?.submissions.length ?? 0;
-
   return (
     <div className="admin-history" aria-label={`Submission history for ${selectedUser.username}`}>
       <div className="admin-title">

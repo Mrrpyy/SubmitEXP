@@ -42,9 +42,9 @@ function canvasDateToISO(value: string): string {
     date.getSeconds() !== second) {
     throw new Error('Invalid Canvas date');
   }
-
   return date.toISOString();
 }
+
 export default function App() {
 // Canvas submission checking
   const [checking, setChecking] = useState(false);
@@ -73,61 +73,46 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const authGuard = useRef(new AuthRequestGuard());
   const sessionWriteQueue = useRef<Promise<void>>(Promise.resolve());
-
   function queueSessionWrite(action: () => Promise<void>): Promise<void> {
     const operation = sessionWriteQueue.current
       .catch(() => undefined)
       .then(action);
-
     sessionWriteQueue.current = operation;
     return operation;
   }
-
 // Runs once every time the popup opens
   useEffect(() => {
     async function setup() {
       const url = await getActiveTabUrl();
-
       setOnCanvas(isCanvasUrl(url));
       setBackgroundOk(await pingBackground());
-
       const count = ((await loadValue<number>('timesOpened')) ?? 0) + 1;
-
       await saveValue('timesOpened', count);
       setTimesOpened(count);
     }
-
     setup().catch((error) => {
       console.error('Popup setup failed:', error);
     });
   }, []);
   const [progress, setProgress] = useState<StudentProgress | null>(null);
-
   const [progressError, setProgressError] = useState<string | null>(null);
-
 // only students earn EXP, admins can look but not record
   const isStudent = user?.role === 'student';
   useEffect(() => {
     let cancelled = false;
     setProgress(null);
     setProgressError(null);
-
     if (!user || user.role !== 'student') {
       return;
     }
-
     const userId = user.user_id;
-
     async function fetchProgress() {
       try {
         const session = await loadSession();
-
         if (!session || session.user.user_id !== userId) {
           return;
         }
-
         const result = await getStudentProgress(session.token);
-
         if (!cancelled) {
           setProgress(result);
           setProgressError(null);
@@ -140,36 +125,27 @@ export default function App() {
         }
       }
     }
-
     void fetchProgress();
-
     return () => {
       cancelled = true;
     };
   }, [user?.user_id, user?.role]);
-
 // Restore saved login when popup opens
   useEffect(() => {
     const requestId = authGuard.current.begin();
-
     async function restore() {
       const session = await loadSession();
-
       if (!authGuard.current.isCurrent(requestId)) {
         return;
       }
-
       if (!session) return;
-
 // Display saved user immediately
       setUser(session.user);
       try {
         const currentUser = await getCurrentUser(session.token);
-
         if (!authGuard.current.isCurrent(requestId)) {
           return;
         }
-
         setUser(currentUser);
       } catch (error) {
         if (!authGuard.current.isCurrent(requestId)) {
@@ -179,18 +155,15 @@ export default function App() {
         if (error instanceof ApiError &&
           error.status === 401) {
           await queueSessionWrite(clearSession);
-
           if (authGuard.current.isCurrent(requestId)) {
             setUser(null);
           }
         }
       }
     }
-
     restore().catch((error) => {
       console.error('Restoring login failed:', error);
     });
-
     return () => {
       authGuard.current.invalidate();
     };
@@ -198,13 +171,10 @@ export default function App() {
 // Handle successful login
   async function handleLoggedIn(token: string, loggedInUser: User) {
     const requestId = authGuard.current.begin();
-
     await queueSessionWrite(() => saveSession({ token, user: loggedInUser }));
-
     if (!authGuard.current.isCurrent(requestId)) {
       return;
     }
-
     setUser(loggedInUser);
 // Never carry a previous user's OCR result into another login.
     previewRequest.current += 1;
@@ -220,10 +190,10 @@ export default function App() {
     setAwardError(null);
     setDetailsConfirmed(false);
   }
+
 // Handle logout
   async function handleLogout() {
     authGuard.current.invalidate();
-
     try {
       await queueSessionWrite(clearSession);
       setUser(null);
@@ -244,33 +214,26 @@ export default function App() {
       console.error('Logout failed:', error);
     }
   }
+
 async function loadExpPreview(parsed: ParsedSubmission) {
   const request = ++previewRequest.current;
-
   setPreviewPoints(null);
   setPreviewError(null);
   setReviewOpen(false);
   setDetailsConfirmed(false);
-
   if (parsed.type !== 'assignment' ||
     !parsed.dueAt ||
     !parsed.submittedAt) return;
-
   try {
     const due = canvasDateToISO(parsed.dueAt);
     const submitted = canvasDateToISO(parsed.submittedAt);
-
     const difference = Math.abs(new Date(due).getTime() -
       new Date(submitted).getTime());
-
     const MAX_DIFFERENCE = 180 * 24 * 60 * 60 * 1000;
-
     if (difference > MAX_DIFFERENCE) {
       throw new Error('Dates are unusually far apart. Please verify the OCR results.');
     }
-
     const preview = await previewAssignmentPoints(due, submitted);
-
     if (request === previewRequest.current) {
       setPreviewPoints(preview.points);
     }
@@ -282,6 +245,7 @@ async function loadExpPreview(parsed: ParsedSubmission) {
     }
   }
 }
+
 function invalidateYearSelection() {
   previewRequest.current += 1;
   setPreviewPoints(null);
@@ -289,6 +253,7 @@ function invalidateYearSelection() {
   setReviewOpen(false);
   setDetailsConfirmed(false);
 }
+
 async function handleApplyYears() {
   if (!rawOcrText ||
     !submission ||
@@ -315,10 +280,10 @@ async function handleApplyYears() {
   }
   await loadExpPreview(parsed);
 }
+
 // Capture Canvas and calculate assignment EXP preview
   async function handleCheckSubmission() {
     if (checking || awarding || !user || !isStudent || !onCanvas) return;
-
     setChecking(true);
     previewRequest.current += 1;
     setCheckError(null);
@@ -337,7 +302,6 @@ async function handleApplyYears() {
 // Identify the assignment from the active Canvas URL
       const url = await getActiveTabUrl();
       const ids = getCanvasAssignmentIds(url);
-
       if (!ids) {
         throw new Error('Open an individual Canvas assignment page first.');
       }
@@ -368,7 +332,6 @@ async function handleApplyYears() {
       submission.type !== 'assignment' || !submission.title?.trim() ||
       !submission.dueAt || !submission.submittedAt ||
       previewPoints === null || previewError !== null || awardResult !== null) return;
-
     setDetailsConfirmed(false);
     setAwardError(null);
     setReviewOpen(true);
@@ -383,10 +346,8 @@ async function handleApplyYears() {
       previewError !== null || awardResult !== null) {
       return;
     }
-
     setAwarding(true);
     setAwardError(null);
-
     try {
 // Confirm the active URL still identifies the checked assignment
       const currentIds = getCanvasAssignmentIds(await getActiveTabUrl());
@@ -395,13 +356,11 @@ async function handleApplyYears() {
         currentIds.canvas_assignment_id !== assignmentIds.canvas_assignment_id) {
         throw new Error('The active Canvas assignment changed. Check Submission again.');
       }
-
 // Use the existing stored login token
       const session = await loadSession();
       if (!session || session.user.user_id !== user.user_id || session.user.role !== 'student') {
         throw new Error('Your login has changed or expired. Please sign in again.');
       }
-
 // Only send extracted metadata, never the screenshot
       const response = await awardAssignment(session.token, {
         canvas_course_id: assignmentIds.canvas_course_id,
@@ -409,17 +368,14 @@ async function handleApplyYears() {
         assignment_title: submission.title.trim(),
         due_at: canvasDateToISO(submission.dueAt),
         submitted_at: canvasDateToISO(submission.submittedAt), });
-
       setAwardResult(response);
       try {
         const updatedProgress = await getStudentProgress(session.token);
-
         setProgress(updatedProgress);
         setProgressError(null);
       } catch {
         setProgressError('EXP was recorded, but progress could not refresh.');
       }
-
     } catch (error) {
       if (error instanceof ApiError && error.status === 409) {
         setAwardError('This assignment has already been awarded EXP.');
@@ -432,7 +388,6 @@ async function handleApplyYears() {
       setAwarding(false);
     }
   }
-
 // Separate confirmation/success screen, rather than an inline form.
   if (reviewOpen && user && isStudent && submission && assignmentIds && previewPoints !== null) {
     return (
@@ -458,7 +413,6 @@ async function handleApplyYears() {
       </main>
     );
   }
-
   return (
     <main className="shell">
       <div className="tag">SPRINT 1</div>

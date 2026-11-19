@@ -4,13 +4,10 @@ from typing import Literal
 from fastapi import APIRouter
 from pydantic import BaseModel, ConfigDict, Field
 from point_calculator import calculate_assignment_points
-
 router = APIRouter(prefix="/integration", tags=["integration"])
-
 class SubmissionMetadata(BaseModel):
 # Do not accept screenshots, passwords, user IDs or arbitrary extra fields.
     model_config = ConfigDict(extra="forbid")
-
     assignment_title: str = Field(min_length=1, max_length=255)
     course_name: str | None = Field(default=None, max_length=150)
     submission_type: Literal["assignment", "quiz", "test", "exam"] = "assignment"
@@ -33,7 +30,6 @@ def validate_metadata(body: SubmissionMetadata) -> ValidationResponse:
 
 class AssignmentPointsRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     due_at: datetime
     submitted_at: datetime
 

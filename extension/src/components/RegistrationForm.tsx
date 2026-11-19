@@ -1,57 +1,44 @@
 import { useState, type FormEvent } from 'react';
 import { registerUser } from '../services/api';
-
 export default function RegistrationForm() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
     setError('');
     setSuccess('');
-
     const cleanUsername = username.trim();
     const cleanEmail = email.trim().toLowerCase();
-
     if (!/^[A-Za-z0-9_]{3,50}$/.test(cleanUsername)) {
       setError('Username must be 3-50 characters, using only letters, numbers, or underscores.');
       return;
     }
-
     if (password.length < 8) {
       setError('Password must contain at least 8 characters.');
       return;
     }
-
     if (new TextEncoder().encode(password).length > 72) {
       setError('Password must be 72 bytes or fewer.');
       return;
     }
-
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
     }
-
     setLoading(true);
-
     try {
       const result = await registerUser({
         username: cleanUsername,
         email: cleanEmail,
         password, });
-
       setSuccess(
         `Account created for ${result.username}! You can log in now.`
       );
-
       setUsername('');
       setEmail('');
       setPassword('');
@@ -64,7 +51,6 @@ export default function RegistrationForm() {
       setLoading(false);
     }
   }
-
   return (
     <section className="panel registration-panel">
       <h2>Create Account</h2>

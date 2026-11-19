@@ -5,13 +5,10 @@ import type { AdminStats, AdminUserRow, User } from '../services/api';
 import { loadSession } from '../services/session';
 import { canChangeRole, filterUsers, otherRole, replaceUser } from '../services/adminFilters';
 import type { RoleFilter } from '../services/adminFilters';
-
 // administrator interface (backlog item 18)
-
 interface AdminPanelProps {
   currentUser: User;
 }
-
 export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUserRow[]>([]);
@@ -24,9 +21,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const [savingId, setSavingId] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [historyUser, setHistoryUser] = useState<AdminUserRow | null>(null);
-
-// ---------- loading ----------
-
+// loading
   async function getToken(): Promise<string> {
     const session = await loadSession();
     if (!session || session.user.user_id !== currentUser.user_id) {
@@ -52,13 +47,10 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       setLoading(false);
     }
   }
-
   useEffect(() => {
     void loadAll();
   }, [currentUser.user_id]);
-
-// ---------- role changes ----------
-
+// role changes
   async function confirmRoleChange(row: AdminUserRow) {
     const newRole = otherRole(row.role);
     setSavingId(row.user_id);
@@ -83,11 +75,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       setPendingId(null);
     }
   }
-
   const shown = filterUsers(users, search, roleFilter);
-
-// ---------- app totals ----------
-
+// app totals
   return (
     <section className="panel admin-panel">
       <div className="admin-title">

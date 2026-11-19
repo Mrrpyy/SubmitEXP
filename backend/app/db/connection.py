@@ -2,13 +2,9 @@
 from functools import lru_cache
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
-
 from app.core.config import DATABASE_URL
-
-
 class DatabaseNotConfigured(RuntimeError):
     pass
-
 
 @lru_cache(maxsize=1)
 def get_engine() -> Engine:

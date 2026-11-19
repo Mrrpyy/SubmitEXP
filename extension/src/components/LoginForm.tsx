@@ -2,23 +2,19 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { loginUser } from '../services/api';
 import type { User } from '../services/api';
-
 type Props = {
   onLoggedIn: (token: string, user: User) => void | Promise<void>;
 };
-
 export default function LoginForm({ onLoggedIn }: Props) {
 // username or email
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       const result = await loginUser(identifier.trim(), password);
       await onLoggedIn(result.access_token, result.user);
@@ -28,7 +24,6 @@ export default function LoginForm({ onLoggedIn }: Props) {
       setLoading(false);
     }
   }
-
   return (
     <section className="panel login-panel">
       <h2>Log In</h2>
