@@ -415,7 +415,6 @@ async function handleApplyYears() {
   }
   return (
     <main className="shell">
-      <div className="tag">SPRINT 1</div>
 
       <h1>
         Submit<span>EXP</span>
