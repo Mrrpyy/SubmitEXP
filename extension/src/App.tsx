@@ -485,7 +485,7 @@ async function handleApplyYears() {
       {user && <Leaderboard key={user.user_id} user={user} refreshKey={awardResult?.submission_id ?? 0} />}
 
 {/* Submission History */}
-      {user && <SubmissionHistory key={user.user_id} user={user} refreshKey={awardResult?.submission_id ?? 0} />}
+      {user && isStudent && <SubmissionHistory key={user.user_id} user={user} refreshKey={awardResult?.submission_id ?? 0} />}
 
 {/* ---------- admin interface ---------- */}
       {user?.role === 'admin' && <AdminPanel currentUser={user} />}
