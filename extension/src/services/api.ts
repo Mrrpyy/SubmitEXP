@@ -257,3 +257,26 @@ export function getAdminUserSubmissions(token: string, userId: number, limit = 2
     `/admin/users/${userId}/submissions?limit=${limit}&offset=${offset}`,
     undefined, token,);
 }
+
+//student submission history 
+export interface HistoryRow {
+  submission_id: number;
+  assignment_title: string;
+  course_name: string | null;
+  submission_type: SubmissionType;
+  due_at: string | null;
+  submitted_at: string | null;
+  points_awarded: number | null;
+  
+}
+export interface HistoryPage {
+  total: number;
+  limit: number;
+  offset: number;
+  submissions: HistoryRow[];
+}
+export function getMyHistory(token: string, limit = 20, offset = 0, ): Promise<HistoryPage> {
+  return apiRequest<HistoryPage>(
+    `/history?limit=${limit}&offset=${offset}`,
+    undefined, token,)
+;}
