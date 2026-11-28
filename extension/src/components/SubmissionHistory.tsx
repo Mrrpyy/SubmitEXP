@@ -13,7 +13,7 @@ interface SubmissionHistoryProps {
 
 function formatDate(value: string | null): string {
     if (!value) return 'Not available';
-    const date = new Date(value.endsWith('Z') ? value : `${value}Z`);
+    const date = new Date(/(?:Z|[+-]\d{2}:\d{2})$/i.test(value) ? value : `${value}Z`);
     if (Number.isNaN(date.getTime())) return 'Not available';
     return date.toLocaleString();
 }
