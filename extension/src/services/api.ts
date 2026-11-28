@@ -280,3 +280,23 @@ export function getMyHistory(token: string, limit = 20, offset = 0, ): Promise<H
     `/history?limit=${limit}&offset=${offset}`,
     undefined, token,)
 ;}
+
+// badges
+
+export interface BadgeInfo {
+  id: string;
+  name: string;
+  description: string;
+  earned: boolean;
+}
+
+export interface BadgeList {
+  earned_count: number;
+  total: number;
+  badges: BadgeInfo[];
+}
+export function getMyBadges(token: string): Promise<BadgeList> {
+  return apiRequest<BadgeList>('/badges', undefined, token);
+}
+
+

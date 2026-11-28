@@ -6,6 +6,7 @@ import ProfileDashboard from './components/ProfileDashboard';
 import AdminPanel from './components/AdminPanel';
 import Leaderboard from './components/Leaderboard';
 import SubmissionHistory from './components/SubmissionHistory';
+import Badges from './components/Badges';
 import SubmissionConfirmation from './components/SubmissionConfirmation';
 import {ApiError, awardAssignment, getCurrentUser, previewAssignmentPoints,} from './services/api';
 import type { AssignmentAwardResponse, User } from './services/api';
@@ -483,6 +484,9 @@ async function handleApplyYears() {
 
 {/* Student EXP leaderboard */}
       {user && <Leaderboard key={user.user_id} user={user} refreshKey={awardResult?.submission_id ?? 0} />}
+
+{/* Student badges */}
+      {user && isStudent && <Badges key={user.user_id} user={user} refreshKey={awardResult?.submission_id ?? 0} />}
 
 {/* Submission History */}
       {user && isStudent && <SubmissionHistory key={user.user_id} user={user} refreshKey={awardResult?.submission_id ?? 0} />}
