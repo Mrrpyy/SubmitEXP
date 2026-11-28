@@ -44,25 +44,25 @@ export default function SubmissionHistory({ user, refreshKey }: SubmissionHistor
                 if (!cancelled) {
                     setData(result);
                 }
-                } catch (err) {
-                    if (!cancelled) {
-                        setError(err instanceof Error ? err.message : 'Unable to load history');
-                    }
-                } finally {
-                    if (!cancelled) {
-                        setLoading(false);
-                    }
+            } catch (err) {
+                if (!cancelled) {
+                    setError(err instanceof Error ? err.message : 'Unable to load history');
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
                 }
             }
-            void loadHistory();
-            return () => { cancelled = true; };
-        }, [user.user_id, offset, refreshKey, reloadKey]);
+        }
+        void loadHistory();
+        return () => { cancelled = true; };
+    }, [user.user_id, offset, refreshKey, reloadKey]);
 
-        const total = data?.total ?? 0;
-        const first = total === 0 ? 0 : offset + 1;
-        const last = Math.min(offset + PAGE_SIZE, total);
+    const total = data?.total ?? 0;
+    const first = total === 0 ? 0 : offset + 1;
+    const last = Math.min(offset + PAGE_SIZE, total);
 
-        return (
+    return (
     <section className="panel leaderboard-panel">
       <div className="leaderboard-heading">
         <h2>My History</h2>
